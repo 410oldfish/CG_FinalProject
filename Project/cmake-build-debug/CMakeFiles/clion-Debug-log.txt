@@ -1,0 +1,5 @@
+/home/yhy/.cache/JetBrains/RemoteDev/dist/c0d814f62eb66_CLion-2024.3.4/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/yhy/.cache/JetBrains/RemoteDev/dist/c0d814f62eb66_CLion-2024.3.4/bin/ninja/linux/x64/ninja -G Ninja -S /mnt/e/CG_FinalProject/Project -B /mnt/e/CG_FinalProject/Project/cmake-build-debug
+-- OpenMP found. Compiling with OpenMP support.
+-- Configuring done (0.1s)
+-- Generating done (0.5s)
+-- Build files have been written to: /mnt/e/CG_FinalProject/Project/cmake-build-debug

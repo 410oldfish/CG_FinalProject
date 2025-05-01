@@ -1,95 +1,83 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "Renderer.hpp"
+#include "Scene.hpp"
+#include "Triangle.hpp"
+#include "Sphere.hpp"
+#include "Cylinder.hpp"
+#include "Vector.hpp"
+#include "global.hpp"
+#include <chrono>
 
-std::string loadShaderSource(const char* path) {
-    std::ifstream file(path);
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
+int MAX_DEPTH = 10;
+int SAMPLE_LIGHT = 12;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
+// In the main function of the program, we create the scene (create objects and
+// lights) as well as set the options for the render (image width and height,
+// maximum recursion depth, field-of-view, etc.). We then call the render
+// function().
+int main(int argc, char** argv)
+{
+    Scene scene(512, 512);
+    scene.spp = 32;
 
-int main() {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //pre-defined Materials
+    Material* wood = new Material(OPAQUE, Vector3f(0.55f, 0.27f, 0.07f), 0.8f, 0.0f);
+    Material* plastic = new Material(OPAQUE, Vector3f(0.2f, 0.6f, 0.9f), 0.2f, 0.0f);
+    Material* metal_rusted = new Material(OPAQUE, Vector3f(0.7f, 0.3f, 0.1f), 0.9f, 1.0f);
+    Material* metal = new Material(OPAQUE, Vector3f(0.9f, 0.85f, 0.7f), 0.05f, 1.0f);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL 4.6 Triangle", NULL, NULL);
-    if (!window) {
-        std::cerr << "Failed to create window\n";
-        glfwTerminate();
-        return -1;
-    }
+    Material* red = new Material(OPAQUE, Vector3f(1.0f, 0.0f, 0.0f));
+    Material* gray = new Material(OPAQUE, Vector3f(0.2f, 0.2f, 0.2f));
+    Material* pink = new Material(OPAQUE, Vector3f(0.72f, 0.48f, 0.56f));
+    Material* blue = new Material(OPAQUE, Vector3f(0.2f, 0.6f, 0.86f));
+    Material* green = new Material(OPAQUE, Vector3f(0.5f, 0.7f, 0.13f));
+    Material* yellow = new Material(OPAQUE, Vector3f(1.0f, 1.0f, 0.0f));
+    Material* white = new Material(OPAQUE, Vector3f(0.48f, 0.45f, 0.4f));
+    Material* light = new Material(EMIT, Vector3f(1));
+    light->m_emission=100;
 
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    MeshTriangle ceil("ceil", "../models/cornellbox/floor.obj", Vector3f(0), white);
+    MeshTriangle left("left", "../models/cornellbox/left.obj", Vector3f(0), red);
+    MeshTriangle right("right", "../models/cornellbox/right.obj",Vector3f(0),  green);
+    MeshTriangle light_("arealight", "../models/cornellbox/light.obj",Vector3f(0,-5,0), light);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD\n";
-        return -1;
-    }
+    scene.Add(&ceil);
+    scene.Add(&left);
+    scene.Add(&right);
+    scene.Add(&light_);
 
-    float vertices[] = {
-        // positions
-         0.0f,  0.5f,
-        -0.5f, -0.5f,
-         0.5f, -0.5f
-    };
+    scene.Add(new Sphere(Vector3f(440,45,80), 60, metal));
+    scene.Add(new Cylinder(Vector3f(330,0,260), 70, 200, metal_rusted));
 
-    GLuint VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    MeshTriangle duck("duck", "../models/bob-the-duck/bob.obj",Vector3f(-20,0,-30),  wood);
+    scene.Add(&duck);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    MeshTriangle shortbox("box", "../models/cornellbox/shortbox.obj",Vector3f(-20,0,-30),  plastic);
+    scene.Add(&shortbox);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    //MeshTriangle tallbox("../models/cornellbox/tallbox.obj",Vector3f(-20,0,0),  gray);
+    //scene.Add(&tallbox);
 
-    std::string vShaderCode = loadShaderSource("shaders/vertex.glsl");
-    std::string fShaderCode = loadShaderSource("shaders/fragment.glsl");
+    Vector3f verts[4] = {{0,0,0}, {552.8,0,0}, {549.6, 0,559.2}, {0,0,559.2}};
+    Vector2f st[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+    uint32_t vertIndex[6] = {0, 2, 1, 2,0,3};
+    Material* mfloor=new Material(OPAQUE, Vector3f(1,1,1));
+    //mfloor->textured=true;
+    scene.Add(new MeshTriangle("floor", verts, vertIndex, 2,st,mfloor));
 
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vSource = vShaderCode.c_str();
-    glShaderSource(vertexShader, 1, &vSource, NULL);
-    glCompileShader(vertexShader);
+    //scene.Add(std::make_unique<PointLight>(Vector3f(-2000, 4000, -3000), 0.5));
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fSource = fShaderCode.c_str();
-    glShaderSource(fragmentShader, 1, &fSource, NULL);
-    glCompileShader(fragmentShader);
+    scene.buildBVH();
 
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Renderer r;
 
-    while (!glfwWindowShouldClose(window)) {
-        glClearColor(0.1f, 0.12f, 0.15f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+    auto start = std::chrono::system_clock::now();
+    r.Render(scene);
+    auto stop = std::chrono::system_clock::now();
 
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+    std::cout << "Render complete: \n";
+    std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::hours>(stop - start).count() << " hours\n";
+    std::cout << "          : " << std::chrono::duration_cast<std::chrono::minutes>(stop - start).count() << " minutes\n";
+    std::cout << "          : " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << " seconds\n";
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }

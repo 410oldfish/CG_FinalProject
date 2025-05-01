@@ -1,17 +1,39 @@
 cmake_minimum_required(VERSION 3.10)
-project(FinalProject)
+project(RayTracing)
 
+# Use C++17
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# 添加 glad 和 glfw
-include_directories(include)
-add_subdirectory(${CMAKE_SOURCE_DIR}/external/glfw)
+# Find OpenMP
+find_package(OpenMP REQUIRED)
 
-# 编译 glad
-add_library(glad src/glad.c)
+# Define source files
+set(SOURCES
+        main.cpp
+        Object.hpp
+        Vector.cpp Vector.hpp
+        Sphere.hpp
+        global.hpp
+        Triangle.hpp
+        Scene.cpp Scene.hpp
+        PointLight.hpp
+        AreaLight.hpp
+        BVH.cpp BVH.hpp
+        Bounds3.hpp
+        Ray.hpp
+        Material.hpp
+        Intersection.hpp
+        Renderer.cpp Renderer.hpp
+)
 
-# 主程序
-add_executable(FinalProject main.cpp)
+# Add executable
+add_executable(RayTracing ${SOURCES})
 
-# 链接库
-target_link_libraries(FinalProject glad glfw ${CMAKE_DL_LIBS})
+# Link OpenMP if found
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(RayTracing PUBLIC OpenMP::OpenMP_CXX)
+    message(STATUS "OpenMP found. Compiling with OpenMP support.")
+else()
+    message(FATAL_ERROR "OpenMP not found! Please install OpenMP (libgomp).")
+endif()
