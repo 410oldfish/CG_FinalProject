@@ -39,6 +39,20 @@ inline float get_random_float() {
     return dist(gen);
 }
 
+inline Vector3f exp_vec3(const Vector3f& v) {
+    return Vector3f(std::exp(v.x), std::exp(v.y), std::exp(v.z));
+}
+
+inline float sqr(float x) { return x*x; }
+
+inline Vector3f mix(const Vector3f& a, const Vector3f& b, float t) {
+    return a * (1.0f - t) + b * t;
+}
+
+inline float mix(float a, float b, float t) {
+    return a * (1.0f - t) + b * t;
+}
+
 inline void UpdateProgress(float progress)
 {
     int barWidth = 70;
@@ -53,3 +67,48 @@ inline void UpdateProgress(float progress)
     std::cout << "] " << int(progress * 100.0) << " %\r";
     std::cout.flush();
 };
+
+//Material funcs
+inline float SchlickFresnel(float u)
+{
+    float m = clamp(1-u, 0, 1);
+    float m2 = m*m;
+    return m2*m2*m; // pow(m,5)
+}
+
+inline float GTR1(float NdotH, float a)
+{
+    if (a >= 1) return 1/M_PI;
+    float a2 = a*a;
+    float t = 1 + (a2-1)*NdotH*NdotH;
+    return (a2-1) / (M_PI*log(a2)*t);
+}
+
+inline float GTR2(float NdotH, float a)
+{
+    float a2 = a*a;
+    float t = 1 + (a2-1)*NdotH*NdotH;
+    return a2 / (M_PI * t*t);
+}
+
+inline float GTR2_aniso(float NdotH, float HdotX, float HdotY, float ax, float ay)
+{
+    return 1 / (M_PI * ax*ay * sqr( sqr(HdotX/ax) + sqr(HdotY/ay) + NdotH*NdotH ));
+}
+
+inline float smithG_GGX(float NdotV, float alphaG)
+{
+    float a = alphaG*alphaG;
+    float b = NdotV*NdotV;
+    return 1 / (NdotV + sqrt(a + b - a*b));
+}
+
+inline float smithG_GGX_aniso(float NdotV, float VdotX, float VdotY, float ax, float ay)
+{
+    return 1 / (NdotV + sqrt( sqr(VdotX*ax) + sqr(VdotY*ay) + sqr(NdotV) ));
+}
+
+inline Vector3f mon2lin(Vector3f x)
+{
+    return Vector3f(pow(x[0], 2.2), pow(x[1], 2.2), pow(x[2], 2.2));
+}

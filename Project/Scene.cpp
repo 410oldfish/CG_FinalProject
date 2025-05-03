@@ -144,94 +144,191 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const
 //     return hitColor;
 // }
 
-//Monte Caro
- Vector3f Scene::castRay(const Ray &ray, int depth) const
- {
-     if (depth > MAX_DEPTH)
-         return Vector3f(0);
+// #region Monte Caro
+// Vector3f Scene::castRay(const Ray &ray, int depth) const
+// {
+//     if (depth > MAX_DEPTH)
+//         return Vector3f(0);
+//
+//     Intersection inter = intersect(ray);
+//     if (!inter.happened)
+//         return backgroundColor;
+//
+//     Vector3f hitColor(0);
+//     Vector3f hitPoint = inter.coords;
+//     Vector3f N = inter.normal.normalized();
+//     Vector3f wo = -ray.direction.normalized();  // 观察方向
+//     auto &material = inter.material;
+//
+//     // 如果是自发光材质，直接返回
+//     if (material->hasEmission())
+//         return material->getEmission();
+//
+//     // Russian Roulette
+//     float rr_prob = 0.8f;
+//     if (get_random_float() > rr_prob)
+//         return Vector3f(0);
+//
+//     // =============== 1. 光源采样（Direct Light with MIS） ===============
+//     {
+//         for (int i =0; i< SAMPLE_LIGHT;i++) {
+//             Intersection lightInter;
+//             float pdf_light = 0.0f;
+//             sampleLight(lightInter, pdf_light);  // 按面积采样一个光源点
+//
+//             Vector3f lightDir = (lightInter.coords - hitPoint).normalized();
+//             float dist = (lightInter.coords - hitPoint).norm();
+//             float dist2 = dist * dist;
+//             Vector3f shadowOrigin = hitPoint + N * EPSILON;
+//             Ray shadowRay(shadowOrigin, lightDir);
+//             Intersection shadowHit = intersect(shadowRay);
+//
+//             // 检查遮挡（shadow ray 命中目标光源）
+//             if (shadowHit.happened && shadowHit.material->hasEmission()) {
+//                 Vector3f f = material->eval( lightDir, wo, N);
+//                 float cos_theta = std::max(0.f, dotProduct(N, lightDir));
+//                 float cos_theta_light = std::max(0.f, dotProduct(lightInter.normal, -lightDir));
+//                 Vector3f Le = lightInter.material->getEmission();
+//
+//                 //pdf_light = get_light_pdf(lightInter, hitPoint);
+//                 float pdf_light_dist2 = pdf_light * dist2;
+//                 float pdf_bsdf = material->pdf(wo, lightDir, N);
+//                 float mis_weight = pdf_light_dist2 / (pdf_light_dist2 + pdf_bsdf + EPSILON);
+//                 hitColor += f * Le * cos_theta * cos_theta_light /  (pdf_light_dist2 + EPSILON) * mis_weight;
+//             }
+//         }
+//         hitColor = hitColor/(float)SAMPLE_LIGHT;
+//         //std::cout << hitColor << std::endl;
+//     }
+//
+//     // =============== 2. BSDF采样（Indirect Light + MIS） ===============
+//    {
+//         Vector3f wi = material->sample(wo, N);  // 采样方向
+//         float pdf_bsdf = material->pdf(wo, wi, N);
+//
+//         if (pdf_bsdf > EPSILON) {
+//             Vector3f f = material->eval(wi, wo, N);  // BRDF
+//             //Vector3f albedo = material->m_color;
+//             float cos_theta = std::max(0.f, dotProduct(wi, N));
+//             Vector3f origin = hitPoint + N * EPSILON;
+//             Ray newRay(origin, wi);
+//             Intersection newInter = intersect(newRay);
+//
+//             if (newInter.happened) {
+//                 //采样光线射中了光源
+//                 if (newInter.material->hasEmission()) {
+//                     // 光源路径 - 使用 MIS 权重
+//                     Vector3f Le = newInter.material->getEmission();
+//                     float pdf_light = get_light_pdf(newInter, hitPoint);
+//                     float mis_weight = pdf_bsdf / (pdf_bsdf + pdf_light + EPSILON);
+//                     hitColor += f * Le * cos_theta / (pdf_bsdf * rr_prob + EPSILON) * mis_weight;
+//                 } else {
+//                     // 间接递归路径
+//                     Vector3f Li = castRay(newRay, depth + 1);
+//                     hitColor += f * Li * cos_theta / (pdf_bsdf * rr_prob + EPSILON);
+//                 }
+//             }
+//         }
+//    }
+//
+//     return hitColor;
+// }
+// #endregion
 
-     Intersection inter = intersect(ray);
-     if (!inter.happened)
-         return backgroundColor;
+// #region Disney BSDF
+Vector3f Scene::castRay(const Ray &ray, int depth) const {
+    if (depth > MAX_DEPTH) return Vector3f(0);
 
-     Vector3f hitColor(0);
-     Vector3f hitPoint = inter.coords;
-     Vector3f N = inter.normal.normalized();
-     Vector3f wo = -ray.direction.normalized();  // 观察方向
-     auto &material = inter.material;
+    Intersection inter = intersect(ray);
+    if (!inter.happened) return backgroundColor;
 
-     // 如果是自发光材质，直接返回
-     if (material->hasEmission())
-         return material->getEmission();
+    auto &material = inter.material;
+    Vector3f hitPoint = inter.coords;
+    Vector3f N = inter.normal.normalized();
+    Vector3f wo = -ray.direction.normalized();
 
-     // Russian Roulette
-     float rr_prob = 0.9f;
-     if (get_random_float() > rr_prob)
-         return Vector3f(0);
-
-     // =============== 1. 光源采样（Direct Light with MIS） ===============
-     {
-         for (int i =0; i< SAMPLE_LIGHT;i++) {
-             Intersection lightInter;
-             float pdf_light = 0.0f;
-             sampleLight(lightInter, pdf_light);  // 按面积采样一个光源点
-
-             Vector3f lightDir = (lightInter.coords - hitPoint).normalized();
-             float dist = (lightInter.coords - hitPoint).norm();
-             float dist2 = dist * dist;
-             Vector3f shadowOrigin = hitPoint + N * EPSILON;
-             Ray shadowRay(shadowOrigin, lightDir);
-             Intersection shadowHit = intersect(shadowRay);
-
-             // 检查遮挡（shadow ray 命中目标光源）
-             if (shadowHit.happened && shadowHit.material->hasEmission()) {
-                 Vector3f f = material->eval( lightDir, wo, N);
-                 float cos_theta = std::max(0.f, dotProduct(N, lightDir));
-                 float cos_theta_light = std::max(0.f, dotProduct(lightInter.normal, -lightDir));
-                 Vector3f Le = lightInter.material->getEmission();
-
-                 pdf_light = get_light_pdf(lightInter, hitPoint);
-                 float pdf_bsdf = material->pdf(wo, lightDir, N);
-                 float mis_weight = pdf_light / (pdf_light + pdf_bsdf + EPSILON);
-                 hitColor += f * Le * cos_theta * cos_theta_light /  (pdf_light + EPSILON) * mis_weight;
-             }
-         }
-         hitColor = hitColor/(float)SAMPLE_LIGHT;
-         //std::cout << hitColor << std::endl;
-     }
-
-     // =============== 2. BSDF采样（Indirect Light + MIS） ===============
-    {
-         Vector3f wi = material->sample(wo, N);  // 采样方向
-         float pdf_bsdf = material->pdf(wo, wi, N);
-
-         if (pdf_bsdf > EPSILON) {
-             Vector3f f = material->eval(wi, wo, N);  // BRDF
-             //Vector3f albedo = material->m_color;
-             float cos_theta = std::max(0.f, dotProduct(wi, N));
-             Vector3f origin = hitPoint + N * EPSILON;
-             Ray newRay(origin, wi);
-             Intersection newInter = intersect(newRay);
-
-             if (newInter.happened) {
-                 //采样光线射中了光源
-                 if (newInter.material->hasEmission()) {
-                     // 光源路径 - 使用 MIS 权重
-                     Vector3f Le = newInter.material->getEmission();
-                     float pdf_light = get_light_pdf(newInter, hitPoint);
-                     float mis_weight = pdf_bsdf / (pdf_bsdf + pdf_light + EPSILON);
-                     hitColor += f * Le * cos_theta / (pdf_bsdf * rr_prob + EPSILON) * mis_weight;
-                 } else {
-                     // 间接递归路径
-                     Vector3f Li = castRay(newRay, depth + 1);
-                     hitColor += f * Li * cos_theta / (pdf_bsdf * rr_prob + EPSILON);
-                 }
-             }
-         }
+    // 发光物体直接返回自发光
+    if (material->hasEmission()) {
+        return material->m_emission;
     }
 
-     return hitColor;
- }
+    // Russian Roulette
+    float rr_prob = 0.8f;
+    if (get_random_float() > rr_prob) return Vector3f(0);
+
+    Vector3f L_direct(0), L_indirect(0);
+
+    // ================= Direct Light via MIS =================
+    for (int i = 0; i < SAMPLE_LIGHT; ++i) {
+        Intersection lightInter;
+        float pdf_light = 0.0f;
+        sampleLight(lightInter, pdf_light);  // 按面积采样光源
+
+        Vector3f x = hitPoint;
+        Vector3f x_l = lightInter.coords;
+        Vector3f n_l = lightInter.normal;
+        Vector3f wi = (x_l - x).normalized();
+        float dist = (x_l - x).norm();
+        float dist2 = dist * dist;
+
+        // shadow ray
+        Ray shadowRay(hitPoint + N * EPSILON, wi);
+        Intersection shadowHit = intersect(shadowRay);
+
+        if (shadowHit.happened && shadowHit.material->hasEmission()) {
+            Vector3f f = material->eval(wi, wo, N);
+            Vector3f Le = lightInter.material->m_emission;
+            float cos_theta = std::max(0.0f, dotProduct(N, wi));
+            float cos_theta_light = std::max(0.0f, dotProduct(n_l, -wi));
+
+            float pdf_bsdf = material->pdf(wo, wi, N);
+            float pdf_light_dist2 = pdf_light * dist2;
+            float mis_weight = pdf_light_dist2 * pdf_light_dist2 /
+                               (pdf_light_dist2 * pdf_light_dist2 + pdf_bsdf * pdf_bsdf + EPSILON);
+            L_direct += f * Le * cos_theta * cos_theta_light /
+                        (pdf_light_dist2 + EPSILON) * mis_weight;
+        }
+    }
+    L_direct = L_direct/(float)SAMPLE_LIGHT;
+
+    // ================= Indirect Light =================
+    Vector3f wi = material->sample(wo, N);  // 采样方向
+    float pdf_bsdf = material->pdf(wo, wi, N);
+    if (pdf_bsdf > EPSILON) {
+        Vector3f f = material->eval(wi, wo, N);
+        float cos_theta = std::max(0.0f, dotProduct(N, wi));
+
+        // ===== 判断是否为折射路径 =====
+        Vector3f shifted_origin;
+        if (dotProduct(N, wi) < 0.0f) {
+            // 从内部射出，翻转法线方向
+            Vector3f newN = -N;
+            shifted_origin = hitPoint - newN * EPSILON;
+        } else {
+            shifted_origin = hitPoint + N * EPSILON;
+        }
+
+        Ray newRay(shifted_origin, wi);
+        Intersection newInter = intersect(newRay);
+
+        if (newInter.happened) {
+            if (newInter.material->hasEmission()) {
+                // Light hit via BSDF path
+                float pdf_light = get_light_pdf(newInter, hitPoint);
+                float mis_weight = pdf_bsdf * pdf_bsdf /
+                                   (pdf_bsdf * pdf_bsdf + pdf_light * pdf_light + EPSILON);
+                L_indirect += f * newInter.material->m_emission *
+                              cos_theta / (pdf_bsdf * rr_prob + EPSILON) * mis_weight;
+            } else {
+                // Regular recursive bounce
+                Vector3f Li = castRay(newRay, depth + 1);
+                L_indirect += f * Li * cos_theta / (pdf_bsdf * rr_prob + EPSILON);
+            }
+        }
+    }
+
+    return L_direct + L_indirect;
+}
 
 float Scene::get_light_pdf(const Intersection& lightInter, const Vector3f& shadingPoint) const {
     Vector3f x_l = lightInter.coords;             // 光源采样点
