@@ -11,7 +11,7 @@
 #include "AreaLight.hpp"
 #include "BVH.hpp"
 #include "Ray.hpp"
-
+#include "pcg.h"
 
 class Scene
 {
@@ -39,7 +39,7 @@ public:
     bool shadow_ray_test_area(Vector3f hit_point, Vector3f light_dir, Vector3f normal) const;
     BVHAccel *bvh;
     void buildBVH();
-    Vector3f castRay(const Ray &ray, int depth) const;
+    Vector3f castRay(const Ray &ray, int depth, pcg32_state &rng) const;
     void sampleLight(Intersection &pos, float &pdf) const;
     std::tuple<Vector3f, Vector3f> HandleAreaLight(const AreaLight &light, const Vector3f &hitPoint, const Vector3f &N,
                                                    const Vector3f &shadowPointOrig,
@@ -53,7 +53,7 @@ public:
     // Compute reflection direction
     Vector3f reflect(const Vector3f &I, const Vector3f &N) const
     {
-        return I - 2 * dotProduct(I, N) * N;
+        return I - 2 * dot(I, N) * N;
     }
 
 
@@ -71,7 +71,7 @@ public:
 // If the ray is inside, you need to invert the refractive indices and negate the normal N
     Vector3f refract(const Vector3f &I, const Vector3f &N, const float &ior) const
     {
-        float cosi = clamp(-1, 1, dotProduct(I, N));
+        float cosi = clamp(-1, 1, dot(I, N));
         float etai = 1, etat = ior;
         Vector3f n = N;
         if (cosi < 0) { cosi = -cosi; } else { std::swap(etai, etat); n= -N; }
@@ -93,7 +93,7 @@ public:
 // \param[out] kr is the amount of light reflected
     float fresnel(const Vector3f &I, const Vector3f &N, const float &ior) const
     {
-        float cosi = clamp(-1, 1, dotProduct(I, N));
+        float cosi = clamp(-1, 1, dot(I, N));
         float etai = 1, etat = ior;
         if (cosi > 0) {  std::swap(etai, etat); }
         // Compute sini using Snell's law

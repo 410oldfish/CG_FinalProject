@@ -5,6 +5,8 @@
 #ifndef RAYTRACING_SPHERE_H
 #define RAYTRACING_SPHERE_H
 
+#include <unordered_map>
+
 #include "Object.hpp"
 #include "Vector.hpp"
 #include "Bounds3.hpp"
@@ -23,17 +25,17 @@ public:
     Intersection getIntersection(Ray ray){
         Intersection result;
         result.happened = false;
-        Vector3f L = ray.origin - center;
-        float a = dotProduct(ray.direction, ray.direction);
-        float b = 2 * dotProduct(ray.direction, L);
-        float c = dotProduct(L, L) - radius2;
+        Vector3 L = ray.origin - (Vector3)center;
+        float a = dot(ray.direction, ray.direction);
+        float b = 2 * dot(ray.direction, L);
+        float c = dot(L, L) - radius2;
         float t0, t1;
         if (!solveQuadratic(a, b, c, t0, t1)) return result;
         if (t0 < 0) t0 = t1;
         if (t0 < 0) return result;
         result.happened=true;
 
-        result.coords = Vector3f(ray.origin + ray.direction * t0);
+        result.coords = Vector3f(ray.origin + ray.direction * (Vector3)t0);
         result.normal = normalize(Vector3f(result.coords - center));
         result.material = this->m;
         result.obj = this;

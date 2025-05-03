@@ -1,0 +1,12 @@
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/lajolla_lib.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/lajolla.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_filter.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_frame.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_image.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_intersection.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_materials.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_matrix.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test_mipmap.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/test.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/edit_cache.dir
+E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug/CMakeFiles/rebuild_cache.dir

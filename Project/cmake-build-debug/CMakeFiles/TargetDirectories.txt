@@ -1,3 +1,0 @@
-/mnt/e/CG_FinalProject/Project/cmake-build-debug/CMakeFiles/RayTracing.dir
-/mnt/e/CG_FinalProject/Project/cmake-build-debug/CMakeFiles/edit_cache.dir
-/mnt/e/CG_FinalProject/Project/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,19 @@
+
+Obviously there's an infinite list of things that can be done here. This is just what seems interesting to me in the short term.
+
+Short term goals
+---------------------
+
+Features:
+---------
+Handling a large number of light sources (+ blog post)
+Depth of field
+
+Optimizations:
+--------------
+SIMD shading
+Better PRNG algorithm
+
+Engine:
+-------
+Serialization

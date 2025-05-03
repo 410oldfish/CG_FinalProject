@@ -6,6 +6,9 @@
 #include <sstream>
 #include "Scene.hpp"
 #include "Renderer.hpp"
+#include "pcg.h"
+#include "parallel.h"
+#include "progress_reporter.h"
 #include "Material.hpp"
 #ifdef _OPENMP
     #include <omp.h>
@@ -31,40 +34,39 @@ void Renderer::Render(const Scene& scene)
 
     float progress = 0.0f;
 
-#pragma omp parallel for // use multi-threading for speedup if openmp is available
-    for (uint32_t j = 0; j < scene.height; ++j) {
-        for (uint32_t i = 0; i < scene.width; ++i) {
+    constexpr int tile_size = 16;
+    int num_tiles_x = (IMAGE_W + tile_size - 1) / tile_size;
+    int num_tiles_y = (IMAGE_H + tile_size - 1) / tile_size;
+    auto totalProgress = num_tiles_x * num_tiles_y;
 
-            int m = i + j * scene.width;
-            if(scene.spp==1){
-                // TODO: task 1.2 pixel projection
-                // use a right-hand coordinate system where +x is left, +y is up and +z is forward
-                float x = (2 * (i + 0.5f) / (float)scene.width - 1)* scale * imageAspectRatio;
-                float y = (1 - 2 * (j + 0.5f) / (float)scene.height) * scale;
-                Vector3f dir = normalize(Vector3f(-x, y, 1));
-                framebuffer[m] = scene.castRay(Ray(eye_pos, dir), 0);
-            }else {
-                // TODO: task 4 multi-sampling
-                // use a right-hand coordinate system where +x is left, +y is up and +z is forward
-                // use scene.spp to determine the number of samples per pixel
+    parallel_for([&](const Vector2i &tile) {
+        pcg32_state rng = init_pcg32(tile[1] * num_tiles_x + tile[0]);
+        int x0 = tile[0] * tile_size;
+        int x1 = min(x0 + tile_size, IMAGE_W);
+        int y0 = tile[1] * tile_size;
+        int y1 = min(y0 + tile_size, IMAGE_H);
+
+        for (uint32_t j = y0; j < y1; ++j) {
+            for (uint32_t i = x0; i < x1; ++i) {
+
+                int m = i + j * scene.width;
                 Vector3f total_buffer = Vector3f(0,0,0);
-                for ( int k =0;k<scene.spp;k++) {
-                    float offset_x = get_random_float();
-                    float offset_y = get_random_float();
-                    float x = (2 * (i + offset_x) / (float)scene.width - 1)* scale * imageAspectRatio;
-                    float y = (1 - 2 * (j + offset_y) / (float)scene.height) * scale;
-                    Vector3f dir = normalize(Vector3f(-x, y, 1));
-                    total_buffer += scene.castRay(Ray(eye_pos, dir), 0);
-                }
+                    for ( int k =0;k<scene.spp;k++) {
+                        float offset_x = next_pcg32_real<double>(rng);
+                        float offset_y = next_pcg32_real<double>(rng);
+                        float x = (2 * (i + offset_x) / (float)scene.width - 1)* scale * imageAspectRatio;
+                        float y = (1 - 2 * (j + offset_y) / (float)scene.height) * scale;
+                        Vector3f dir = normalize(Vector3f(-x, y, 1.0f));
+                        total_buffer += scene.castRay(Ray(eye_pos, dir), 0, rng);
+                    }
 
-                framebuffer[m] = total_buffer/scene.spp;
-            }
-            if (i == scene.width -1) {
-                progress += 1.0f / (float)scene.height;
-                UpdateProgress(progress);
+                    framebuffer[m] = total_buffer/(float)scene.spp;
             }
         }
-    }
+        progress += 1.0f / (float)totalProgress;
+        UpdateProgress(progress);
+
+    }, Vector2i(num_tiles_x, num_tiles_y));
     UpdateProgress(1.f);
 
     // save framebuffer to file

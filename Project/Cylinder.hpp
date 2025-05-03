@@ -64,7 +64,7 @@ public:
         // 交顶面
         float t_disk_top = (center.y + height - orig.y) / dir.y;
         Vector3f p_top = orig + dir * t_disk_top;
-        Vector3f center_top = center + Vector3f(0, height, 0);
+        Vector3f center_top = center + Vector3f(0.0f, height, 0.0f);
         Vector3f p_to_top_center = p_top - center_top;
         float distance_squared_top = p_to_top_center.x * p_to_top_center.x + p_to_top_center.z * p_to_top_center.z;
 
@@ -85,7 +85,7 @@ public:
             result.happened = true;
             result.coords = orig + dir * t0;
             Vector3f hitPointLocal = result.coords - center;
-            result.normal = normalize(Vector3f(hitPointLocal.x, 0, hitPointLocal.z)); // 侧面法线
+            result.normal = normalize(Vector3f(hitPointLocal.x, 0.0f, hitPointLocal.z)); // 侧面法线
             result.material = m;
             result.obj = this;
             result.tnear = t0;
@@ -95,7 +95,7 @@ public:
             result.happened = true;
             result.coords = orig + dir * t1;
             Vector3f hitPointLocal = result.coords - center;
-            result.normal = normalize(Vector3f(hitPointLocal.x, 0, hitPointLocal.z)); // 侧面法线
+            result.normal = normalize(Vector3f(hitPointLocal.x, 0.0f, hitPointLocal.z)); // 侧面法线
             result.material = m;
             result.obj = this;
             result.tnear = t1;
@@ -141,7 +141,7 @@ public:
         else
         {
             // 侧面
-            N = normalize(Vector3f(hitPointLocal.x, 0, hitPointLocal.z));
+            N = normalize(Vector3f(hitPointLocal.x, 0.0f, hitPointLocal.z));
         }
 
         st = Vector2f(0, 0); // 暂时纹理坐标还没展开
@@ -174,7 +174,7 @@ public:
             float theta = 2.0f * M_PI * get_random_float(); // 周向随机
             float y = get_random_float() * height;          // 高度随机
 
-            Vector3f dir(std::cos(theta), 0, std::sin(theta)); // 水平方向
+            Vector3f dir(std::cos(theta), 0.0f, std::sin(theta)); // 水平方向
             pos.coords = center + Vector3f(radius * dir.x, y, radius * dir.z);
             pos.normal = dir; // 侧面法线指向外
             pos.obj = this;
@@ -186,7 +186,7 @@ public:
             // 采样底面
             float r_disk = radius * std::sqrt(get_random_float());
             float theta = 2.0f * M_PI * get_random_float();
-            Vector3f p_disk(r_disk * std::cos(theta), 0, r_disk * std::sin(theta));
+            Vector3f p_disk(r_disk * std::cos(theta), 0.0f, r_disk * std::sin(theta));
 
             pos.coords = center + p_disk;
             pos.normal = Vector3f(0, -1, 0); // 朝下
@@ -199,7 +199,7 @@ public:
             // 采样顶面
             float r_disk = radius * std::sqrt(get_random_float());
             float theta = 2.0f * M_PI * get_random_float();
-            Vector3f p_disk(r_disk * std::cos(theta), 0, r_disk * std::sin(theta));
+            Vector3f p_disk(r_disk * std::cos(theta), 0.0f, r_disk * std::sin(theta));
 
             pos.coords = center + Vector3f(p_disk.x, height, p_disk.z);
             pos.normal = Vector3f(0, 1, 0); // 朝上

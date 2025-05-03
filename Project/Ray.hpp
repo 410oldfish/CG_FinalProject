@@ -7,8 +7,8 @@
 #include "Vector.hpp"
 struct Ray{
     //Destination = origin + t*direction
-    Vector3f origin;
-    Vector3f direction, direction_inv;
+    Vector3 origin;
+    Vector3 direction, direction_inv;
     double t;//transportation time,
     double t_min, t_max;
 
@@ -20,10 +20,5 @@ struct Ray{
     }
 
     Vector3f operator()(double t) const{return origin+direction*t;}
-
-    friend std::ostream &operator<<(std::ostream& os, const Ray& r){
-        os<<"[origin:="<<r.origin<<", direction="<<r.direction<<", time="<< r.t<<"]\n";
-        return os;
-    }
 };
 #endif //RAYTRACING_RAY_H

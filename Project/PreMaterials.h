@@ -8,8 +8,8 @@
 #include "Material.hpp"
 // 玻璃
 Material* glass = new Material(
-    Vector3f(0.95, 0.95, 0.95), // basecolor
-    0.01f,                     // roughness
+    Vector3f(0.82f ,0.67f ,0.16f), // basecolor
+    0.1f,                     // roughness
     0.0f,                      // metallic
     0.0f,                      // subsurface
     0.0f,                      // specular
@@ -19,6 +19,7 @@ Material* glass = new Material(
     0.0f,                      // sheen
     0.5f,                      // sheenTint
     1.0f,                      // transmission
+    0.8f,                       //anio
     1.5f,                      // ior
     Vector3f(0.0f)             // emission
 );
@@ -36,6 +37,7 @@ Material* wax = new Material(
     0.0f,
     0.5f,
     0.0f,
+    0.0f,                       //anio
     1.3f,
     Vector3f(0.0f)
 );
@@ -53,6 +55,7 @@ Material* wood = new Material(
     0.0f,
     0.5f,
     0.0f,
+    0.0f,                       //anio
     1.3f,
     Vector3f(0.0f)
 );
@@ -70,6 +73,7 @@ Material* jade = new Material(
     0.0f,
     0.5f,
     0.2f,
+    0.0f,                       //anio
     1.4f,
     Vector3f(0.0f)
 );
@@ -87,6 +91,7 @@ Material* plastic = new Material(
     0.0f,
     0.5f,
     0.0f,
+    0.0f,                       //anio
     1.4f,
     Vector3f(0.0f)
 );
@@ -104,6 +109,7 @@ Material* metal = new Material(
     0.0f,
     0.5f,
     0.0f,
+    0.0f,                       //anio
     1.0f,
     Vector3f(0.0f)
 );
@@ -121,6 +127,7 @@ Material* fabric = new Material(
     0.4f,  // sheen
     0.5f,
     0.0f,
+    0.0f,                       //anio
     1.3f,
     Vector3f(0.0f)
 );
@@ -130,8 +137,10 @@ Material* light_emissive = new Material(
     Vector3f(1.0f),  // base color doesn't matter
     0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f,
-    Vector3f(10.0f, 10.0f, 10.0f) // emission
+    0.0f,
+    0.0f,                       //anio
+    1.0f,
+    Vector3f(20.0f, 20.0f, 20.0f) // emission
 );
 
 Material* dirtyMirror = new Material(
@@ -146,6 +155,7 @@ Material* dirtyMirror = new Material(
     0.0f,                          // 无 sheen
     0.5f,                          // 默认 sheen tint
     0.0f,                          // 不透光
+    0.0f,                       //anio
     1.0f,                          // 默认 IOR
     Vector3f(0.0f)                 // 非自发光
 );

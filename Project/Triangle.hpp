@@ -26,8 +26,8 @@ public:
     {
         e1 = v1 - v0;
         e2 = v2 - v0;
-        normal = normalize(crossProduct(e1, e2));
-        area = crossProduct(e1, e2).norm()*0.5f;
+        normal = normalize(cross(e1, e2));
+        area = length(cross(e1, e2))*0.5f;
     }
 
     Intersection getIntersection(Ray ray) override;
@@ -176,7 +176,7 @@ public:
         const Vector3f& v2 = vertices[vertexIndex[index * 3 + 2]];
         Vector3f e0 = normalize(v1 - v0);
         Vector3f e1 = normalize(v2 - v1);
-        N = normalize(crossProduct(e0, e1));
+        N = normalize(cross(e0, e1));
         const Vector2f& st0 = stCoordinates[vertexIndex[index * 3]];
         const Vector2f& st1 = stCoordinates[vertexIndex[index * 3 + 1]];
         const Vector2f& st2 = stCoordinates[vertexIndex[index * 3 + 2]];
@@ -188,8 +188,8 @@ public:
         float scale = 5;
         float pattern =
             (fmodf(st.x * scale, 1) > 0.5) ^ (fmodf(st.y * scale, 1) > 0.5);
-        return lerp(Vector3f(0.815, 0.235, 0.031),
-                    Vector3f(0.937, 0.937, 0.231), pattern);
+        return mix(Vector3f(0.815f, 0.235f, 0.031f),
+                    Vector3f(0.937f, 0.937f, 0.231f), pattern);
     }
 
     Intersection getIntersection(Ray ray)
@@ -238,35 +238,35 @@ inline Intersection Triangle::getIntersection(Ray ray)
 
     // TODO: task 1.1 Ray-Triangle Intersection
     constexpr float epsilon = 0.001f;
-    auto ray_vector = ray.direction.normalized();
+    auto ray_vector = normalize(ray.direction);
     auto& edge1 = this->e1;
     auto& edge2 = this->e2;
 
-    Vector3f ray_cross_e2 = crossProduct(ray_vector, edge2);
-    float det = dotProduct(edge1, ray_cross_e2);
+    Vector3f ray_cross_e2 = cross(ray_vector, (Vector3)edge2);
+    float det = dot(edge1, ray_cross_e2);
 
     if (det > -epsilon && det < epsilon)
         return inter;    // This ray is parallel to this triangle.
 
     float inv_det = 1.0 / det;
-    Vector3f s = ray.origin - this->v0;
-    float u = inv_det * dotProduct(s, ray_cross_e2);
+    Vector3f s = ray.origin - (Vector3)this->v0;
+    float u = inv_det * dot(s, ray_cross_e2);
 
     if ((u < 0 && abs(u) > epsilon) || (u > 1 && abs(u-1) > epsilon))
         return inter;
 
-    Vector3f s_cross_e1 = crossProduct(s, edge1);
-    float v = inv_det * dotProduct(ray_vector, s_cross_e1);
+    Vector3 s_cross_e1 = cross(s, edge1);
+    float v = inv_det * dot(ray_vector, s_cross_e1);
 
     if ((v < 0 && abs(v) > epsilon) || (u + v > 1 && abs(u + v - 1) > epsilon))
         return inter;
 
     // At this stage we can compute t to find out where the intersection point is on the line.
-    float t = inv_det * dotProduct(edge2, s_cross_e1);
+    float t = inv_det * dot((Vector3)edge2, s_cross_e1);
 
     if (t > epsilon) // ray intersection
     {
-        auto interPoint = Vector3f(ray.origin + ray_vector * t);
+        auto interPoint = Vector3f(ray.origin + ray_vector * (Vector3)t);
         inter.happened = true;
         inter.coords = interPoint;
         inter.tcoords = Vector2f(u,v);
@@ -286,6 +286,6 @@ inline Vector3f Triangle::evalDiffuseColor(const Vector2f& st) const
     auto uv = t0 * (1 - st.x - st.y) + t1 * st.x + t2 * st.y;
     float scale = 5;
     float pattern = (fmodf(uv.x * scale, 1) > 0.5) ^ (fmodf(uv.y * scale, 1) > 0.5);
-    return lerp(Vector3f(0.815, 0.235, 0.031), Vector3f(0.937, 0.937, 0.231), pattern);
+    return mix(Vector3f(0.815, 0.235, 0.031), Vector3f(0.937, 0.937, 0.231), pattern);
 
 }

@@ -1,0 +1,4 @@
+"D:\CLion 2024.3.4\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion 2024.3.4/bin/ninja/win/x64/ninja.exe" -G Ninja -S E:\CG_FinalProject\BSDF_Implement_2\lajolla_renderer-master -B E:\CG_FinalProject\BSDF_Implement_2\lajolla_renderer-master\cmake-build-debug
+-- Configuring done (1.7s)
+-- Generating done (0.3s)
+-- Build files have been written to: E:/CG_FinalProject/BSDF_Implement_2/lajolla_renderer-master/cmake-build-debug

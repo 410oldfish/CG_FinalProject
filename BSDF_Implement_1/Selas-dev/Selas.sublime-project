@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"path": "Source"
+		},
+		{
+			"path": "ProjectGen"
+		},
+		{
+			"path": "Scripts"
+		},
+		{
+			"path": "Source\\Applications"
+		},
+		{
+			"path": "Source\\Core"
+		}
+	]
+}
