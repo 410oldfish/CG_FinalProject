@@ -1,0 +1,19 @@
+"D:\CLion 2024.3.4\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/CLion 2024.3.4/bin/ninja/win/x64/ninja.exe" -G Ninja -S E:\CG_FinalProject\OldProject -B E:\CG_FinalProject\OldProject\cmake-build-debug
+CMake Error at CMakeLists.txt:11 (find_package):
+  By not providing "FindEmbree.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "Embree", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "Embree" with any
+  of the following names:
+
+    EmbreeConfig.cmake
+    embree-config.cmake
+
+  Add the installation prefix of "Embree" to CMAKE_PREFIX_PATH or set
+  "Embree_DIR" to a directory containing one of the above files.  If "Embree"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- Configuring incomplete, errors occurred!
