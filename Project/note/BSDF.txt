@@ -1,0 +1,1 @@
+Diffuse: directional ，作为区别，常规的Lambertian是无方向的

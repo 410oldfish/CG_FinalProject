@@ -83,3 +83,11 @@ inline Real radians(const Real deg) {
 inline Real degrees(const Real rad) {
     return (Real(180) / c_PI) * rad;
 }
+
+inline Real pow2(Real x) {
+    return x * x;
+}
+
+inline Real pow5(Real x) {
+    return x * x * x * x * x;
+}

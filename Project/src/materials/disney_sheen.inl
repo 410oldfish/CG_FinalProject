@@ -12,16 +12,20 @@ Spectrum eval_op::operator()(const DisneySheen &bsdf) const {
     }
 
     // Homework 1: implement this!
-    Spectrum base_clr = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
+    Spectrum base_color = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real sheen_tint = eval(bsdf.sheen_tint, vertex.uv, vertex.uv_screen_size, texture_pool);
-    Real l = luminance(base_clr);
-    Spectrum tint = Spectrum(1);
-    if (l > 0) tint = base_clr / l;
+    Real l = luminance(base_color);
+    Spectrum tint = 1;
+    if (luminance(base_color) > 0) {
+        tint = base_color / l;
+    }
 
-    Spectrum sheen = (1 - sheen_tint) + sheen_tint * tint;
-    Vector3 half_vector = normalize(dir_in + dir_out);
-    
-    return sheen * pow(1 - abs(dot(half_vector, dir_out)), 5) * max(Real(0), dot(frame.n, dir_out));
+    auto Csheen = (1 - sheen_tint) + sheen_tint * tint;
+    Vector3 H = normalize(dir_in + dir_out);
+    Real HdotOut = dot(H, dir_out);
+    Real NdotOut = dot(frame.n, dir_out);
+    auto Fsheen = Csheen * pow5(1 - abs(HdotOut)) * NdotOut;
+    return Fsheen;
 }
 
 Real pdf_sample_bsdf_op::operator()(const DisneySheen &bsdf) const {

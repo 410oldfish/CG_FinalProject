@@ -10,27 +10,25 @@ Spectrum eval_op::operator()(const DisneyClearcoat &bsdf) const {
     if (dot(frame.n, dir_in) <= 0) {
         return make_zero_spectrum();
     }
-    // Homework 1: implement this!
-    Vector3 half_vector = normalize(dir_in + dir_out);
-    Real n_dot_h = dot(frame.n, half_vector);
-    Real n_dot_in = dot(frame.n, dir_in);
-    Real n_dot_out = dot(frame.n, dir_out);
-    Real h_dot_out = dot(half_vector, dir_out);
-    if (n_dot_out <= 0 || n_dot_h <= 0) {
+
+    Real clearcoatGloss = eval(bsdf.clearcoat_gloss, vertex.uv, vertex.uv_screen_size, texture_pool);
+    Real R0 = 0.04;
+    Vector3 H = normalize(dir_in + dir_out);
+    Real HdotOut = dot(H, dir_out);
+    Real NdotH = dot(frame.n, H);
+    Real NdotIn = dot(frame.n, dir_in);
+    if (NdotIn <= 0) {
         return make_zero_spectrum();
     }
 
-    Real clearcoatGloss = eval(bsdf.clearcoat_gloss, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real alpha_g = (1 - clearcoatGloss) * 0.1 + clearcoatGloss * 0.001;
 
-    Real R_0 = 0.04; //(1.5 - 1)^2 / (1.5 + 1)^2
-
-    Real F_c = schlick_fresnel(R_0, h_dot_out);
-    Real D_c = GTR1(n_dot_h, alpha_g);
-    Real G_c = smith_masking_gtr2_aniso(to_local(frame, dir_in), 0.25, 0.25) *
+    Real Fc = schlick_fresnel(R0, HdotOut);
+    Real Dc = GTR1(NdotH, alpha_g);
+    Real Gc = smith_masking_gtr2_aniso(to_local(frame, dir_in), 0.25, 0.25) *
                smith_masking_gtr2_aniso(to_local(frame, dir_out), 0.25, 0.25);
 
-    return F_c * D_c * G_c / (4 * n_dot_in);
+    return Fc * Dc * Gc / (4 * NdotIn);
 }
 
 Real pdf_sample_bsdf_op::operator()(const DisneyClearcoat &bsdf) const {
@@ -45,19 +43,19 @@ Real pdf_sample_bsdf_op::operator()(const DisneyClearcoat &bsdf) const {
         return 0;
     }
     // Homework 1: implement this!
-    Vector3 half_vector = normalize(dir_in + dir_out);
-    Real n_dot_out = dot(frame.n, dir_out);
-    Real n_dot_h = dot(frame.n, half_vector);
-    if (n_dot_out <= 0 || n_dot_h <= 0) {
+    Vector3 H = normalize(dir_in + dir_out);
+    Real NdotOut = dot(frame.n, dir_out);
+    Real NdotH = dot(frame.n, H);
+    if (NdotOut <= 0 || NdotH <= 0) {
         return 0;
     }
 
     Real clearcoatGloss = eval(bsdf.clearcoat_gloss, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real alpha_g = (1 - clearcoatGloss) * 0.1 + clearcoatGloss * 0.001;
 
-    Real D_c = GTR1(n_dot_h, alpha_g);
+    Real Dc = GTR1(NdotH, alpha_g);
 
-    return D_c * n_dot_h / (4 * n_dot_out);
+    return Dc * NdotH / (4 * NdotOut);
 }
 
 std::optional<BSDFSampleRecord>
@@ -71,24 +69,23 @@ std::optional<BSDFSampleRecord>
     if (dot(frame.n, dir_in) <= 0) {
         return {};
     }
-    // Homework 1: implement this!
-    // rnd_param_uv
+
     Real clearcoatGloss = eval(bsdf.clearcoat_gloss, vertex.uv, vertex.uv_screen_size, texture_pool);
-    Real alpha = (1 - clearcoatGloss) * 0.1 + clearcoatGloss * 0.001;
-    Real a2 = alpha * alpha;
+    Real alpha_g = (1 - clearcoatGloss) * 0.1 + clearcoatGloss * 0.001;
+    Real a2 = pow2(alpha_g);
 
-    Real h_elevation = acos(sqrt((1-pow(a2, 1-rnd_param_uv[0])) / (1-a2)));
-    Real h_azimuth = 2 * c_PI * rnd_param_uv[1];
+    Real H_elevation = acos(sqrt(( 1 - pow(a2, 1 - rnd_param_uv[0]) ) / (1 - a2)));
+    Real H_azimuth = 2 * c_PI * rnd_param_uv[1];
 
-    Vector3 h_local;
-    h_local.x = sin(h_elevation) * cos(h_azimuth);
-    h_local.y = sin(h_elevation) * sin(h_azimuth);
-    h_local.z = cos(h_elevation);
+    Vector3 H;
+    H.x = sin(H_elevation) * cos(H_azimuth);
+    H.y = sin(H_elevation) * sin(H_azimuth);
+    H.z = cos(H_elevation);
 
-    Vector3 half_vector = to_world(frame, h_local);
-    Vector3 reflected = normalize(-dir_in + 2 * dot(dir_in, half_vector) * half_vector);
+    Vector3 H_world = to_world(frame, H);
+    Vector3 reflect_dir = reflect_vector(dir_in, H_world);
     return BSDFSampleRecord{
-        reflected,
+        reflect_dir,
         Real(0) /* eta */, clearcoatGloss /* roughness */
     };
 }

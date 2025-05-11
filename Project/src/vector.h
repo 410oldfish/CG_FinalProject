@@ -307,3 +307,22 @@ template <typename T>
 inline std::ostream& operator<<(std::ostream &os, const TVector3<T> &v) {
     return os << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")";
 }
+
+inline Vector3 reflect_vector(const Vector3& dir_in, const Vector3& N) {
+    return normalize(2 * dot(dir_in, N) * N - dir_in);
+}
+
+inline Vector3 refract_vector(const Vector3 &i, const Vector3 &h, Real eta) {
+    Real cos_theta_i = dot(i, h);
+    Real sin2_theta_i = max(Real(0), 1 - cos_theta_i * cos_theta_i);
+    Real sin2_theta_t = sin2_theta_i / (eta * eta);
+
+    // Total Internal Reflection
+    if (sin2_theta_t >= 1) return Vector3(0);
+    auto half = h;
+    if(cos_theta_i < 0) half = -h;
+
+    Real cos_theta_t = sqrt(1 - sin2_theta_t);
+    if (fabs(cos_theta_t) < 1e-6) cos_theta_t = 1e-6;
+    return normalize(-i / eta + (fabs(cos_theta_i) / eta - cos_theta_t) * half + 1e-6 * half);
+}
