@@ -176,7 +176,7 @@ TriangleMesh parse_obj(const fs::path &filename, const Matrix4x4 &to_world) {
             }
             std::string i4;
             if (ss >> i4) {
-                Error("The object file contains n-gon (n>4) that we do not support.");
+                Error("The object file contains n-gon (n>4) that we do not support. : " + i4);
             }
         }  // Currently ignore other tokens
     }

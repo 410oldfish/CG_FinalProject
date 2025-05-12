@@ -1,7 +1,8 @@
 #include "../microfacet.h"
 #include <vector>
 
-void CalculateWeights(
+void weightComputation(
+    Real specular,
     Real specular_transmission,
     Real metallic,
     Real clearcoat,
@@ -15,11 +16,6 @@ void CalculateWeights(
     weights[2] = (1 - specular_transmission * (1 - metallic));
     weights[3] = (1 - metallic) * specular_transmission;
     weights[4] = (1 - metallic) * sheen;
-
-    Real sum = weights[0] + weights[1] + weights[2] + weights[3] + weights[4];
-    for (int i = 0; i < 5; i++) {
-        weights[i] /= sum;
-    }
 }
 
 Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
@@ -27,62 +23,64 @@ Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
                    dot(vertex.geometric_normal, dir_out) > 0;
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
-    //折射和内反射都只考虑glass
-    if (!reflect || dot(frame.n, dir_in) <= 0) {
-        //只考虑glass
-        DisneyGlass glass_data = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
-        return this->operator()(glass_data);
+    // Homework 1: implement this!
+    if(!reflect || dot(frame.n, dir_in) <= 0){
+        // only glass
+        DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
+        return (*this)(glass);
     }
-    else {
-        //Data
-        Spectrum base_color = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
+    else{
+        Spectrum base_clr = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real specular = eval(bsdf.specular, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real specular_tint = eval(bsdf.specular_tint, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real specular_transmission = eval(bsdf.specular_transmission, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real metallic = eval(bsdf.metallic, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real cc = eval(bsdf.clearcoat, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real sh = eval(bsdf.sheen, vertex.uv, vertex.uv_screen_size, texture_pool);
+        Spectrum C0;
+        {
+            Real l = luminance(base_clr);
+            Spectrum Ctint = Spectrum(1);
+            if (l > 0) Ctint = base_clr / l;
+            Real eta = dot(vertex.geometric_normal, dir_in) > 0 ? bsdf.eta : 1 / bsdf.eta;
+            Spectrum Ks = (1 - specular_tint) + specular_tint * Ctint;
+            Real r0 = (1.0 - eta) / (1.0 + eta);
+            r0 = r0 * r0;
+            C0 = specular * r0 * (1 - metallic) * Ks + metallic * base_clr;
+        }
+        Texture<Spectrum> C0_tex = make_constant_spectrum_texture(C0);
 
-        Real l = luminance(base_color);
-        auto Ctint = l > 0 ? l/base_color : 1;
-        auto Ks = (1 - specular_tint) + specular_tint * Ctint;
-        Real eta = dot(vertex.geometric_normal, dir_in) > 0 ? bsdf.eta : 1 / bsdf.eta;
-        Real R0 = pow2( (1 - eta) / (1 + eta ));
-        auto C0 = specular * R0 * (1 - metallic) * Ks + metallic * base_color;
-
-        //Calculate all bsdf
-        //all bsdf needs data
         DisneyDiffuse diffuse_bsdf = {bsdf.base_color, bsdf.roughness, bsdf.subsurface};
         DisneyClearcoat clearcoat_bsdf = {bsdf.clearcoat_gloss};
-        DisneyMetal metal_bsdf = {make_constant_spectrum_texture(C0), bsdf.roughness, bsdf.anisotropic};
+        DisneyMetal metal_bsdf = {C0_tex, bsdf.roughness, bsdf.anisotropic};
         DisneyGlass glass_bsdf = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
         DisneySheen sheen_bsdf = {bsdf.base_color, bsdf.sheen_tint};
 
-        Spectrum diffuse_value = make_zero_spectrum();
-        Spectrum clearcoat_value = make_zero_spectrum();
-        Spectrum metal_value = make_zero_spectrum();
-        Spectrum glass_value = make_zero_spectrum();
-        Spectrum sheen_value = make_zero_spectrum();
+        Spectrum f_Diffuse = make_zero_spectrum();
+        Spectrum f_Clearcoat = make_zero_spectrum();
+        Spectrum f_Sheen = make_zero_spectrum();
+        Spectrum f_Glass = make_zero_spectrum();
+        Spectrum f_Metal = make_zero_spectrum();
 
-        if (dot(frame.n, dir_out) > 0) {
-            diffuse_value = this->operator()(diffuse_bsdf);
-            clearcoat_value = this->operator()(clearcoat_bsdf);
-            metal_value = this->operator()(metal_bsdf);
-            sheen_value = this->operator()(sheen_bsdf);
+
+        f_Glass = this->operator()(glass_bsdf);
+        if (dot(vertex.shading_frame.n, dir_out) > 0)
+        {
+            f_Metal = this->operator()(metal_bsdf);
+            f_Diffuse = this->operator()(diffuse_bsdf);
+            f_Clearcoat = this->operator()(clearcoat_bsdf);
+            f_Sheen = this->operator()(sheen_bsdf);
         }
-        glass_value = this->operator()(glass_bsdf);
-
         std::vector<Real> weights;
-        CalculateWeights(specular_transmission, metallic, cc, sh, weights);
-        Spectrum ret = make_zero_spectrum();
+        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
 
-        ret += weights[0] * diffuse_value;
-        ret += weights[1] * clearcoat_value;
-        ret += weights[2] * metal_value;
-        ret += weights[3] * glass_value;
-        ret += weights[4] * sheen_value;
+        Spectrum result = weights[0] * f_Diffuse
+                        + weights[1] * f_Clearcoat
+                        + weights[2] * f_Metal
+                        + weights[3] * f_Glass
+                        + weights[4] * f_Sheen;
 
-        return ret;
+        return result;
     }
 }
 
@@ -91,50 +89,46 @@ Real pdf_sample_bsdf_op::operator()(const DisneyBSDF &bsdf) const {
                    dot(vertex.geometric_normal, dir_out) > 0;
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
-
-    //折射和内反射都只考虑glass
-    if (!reflect || dot(frame.n, dir_in) <= 0) {
-        //只考虑glass
-        DisneyGlass glass_data = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
-        return this->operator()(glass_data);
+    // Homework 1: implement this!
+    if(!reflect || dot(frame.n, dir_in) <= 0){
+        // only glass
+        DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
+        return (*this)(glass);
     }
-    else {
-        //Data
+    else{
+        Real specular = eval(bsdf.specular, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real specular_transmission = eval(bsdf.specular_transmission, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real metallic = eval(bsdf.metallic, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real cc = eval(bsdf.clearcoat, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real sh = eval(bsdf.sheen, vertex.uv, vertex.uv_screen_size, texture_pool);
 
-        //Calculate all bsdf
-        //all bsdf needs data
-        Real diffuse_value, clearcoat_value, metal_value, glass_value, sheen_value;
-
-        if (dot(frame.n, dir_out) > 0) {
-            DisneyDiffuse diffuse_bsdf = {bsdf.base_color, bsdf.roughness, bsdf.subsurface};
-            DisneyClearcoat clearcoat_bsdf = {bsdf.clearcoat_gloss};
-            DisneyMetal metal_bsdf = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic};
-            DisneySheen sheen_bsdf = {bsdf.base_color, bsdf.sheen_tint};
-
-            diffuse_value = this->operator()(diffuse_bsdf);
-            clearcoat_value = this->operator()(clearcoat_bsdf);
-            metal_value = this->operator()(metal_bsdf);
-            sheen_value = this->operator()(sheen_bsdf);
-        }
-        DisneyGlass glass_bsdf = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
-        glass_value = this->operator()(glass_bsdf);
+        DisneyDiffuse diffuse = {bsdf.base_color, bsdf.roughness, bsdf.subsurface};
+        DisneyClearcoat clearcoat = {bsdf.clearcoat_gloss};
+        DisneyMetal metal = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic};
+        DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
+        DisneySheen sheen = {bsdf.base_color, bsdf.sheen_tint};
 
         std::vector<Real> weights;
-        CalculateWeights(specular_transmission, metallic, cc, sh, weights);
+        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
+        Real totalWeight = 0;
+        for(auto w : weights){ totalWeight += w; }
+        for(Real& w : weights){ w /= totalWeight; }
 
-        Real ret = 0;
+        Real diffuse_bsdf_pdf = (*this)(diffuse);
+        Real clearcoat_bsdf_pdf = (*this)(clearcoat);
+        Real metal_bsdf_pdf = (*this)(metal);
+        Real glass_bsdf_pdf = (*this)(glass);
+        Real sheen_bsdf_pdf = (*this)(sheen);
 
-        ret += weights[0] * diffuse_value;
-        ret += weights[1] * clearcoat_value;
-        ret += weights[2] * metal_value;
-        ret += weights[3] * glass_value;
-        ret += weights[4] * sheen_value;
+        Real result = Real(0);
 
-        return ret;
+        result += weights[0] * diffuse_bsdf_pdf;
+        result += weights[1] * clearcoat_bsdf_pdf;
+        result += weights[2] * metal_bsdf_pdf;
+        result += weights[3] * glass_bsdf_pdf;
+        result += weights[4] * sheen_bsdf_pdf;
+
+        return result;
     }
 }
 
@@ -143,36 +137,46 @@ std::optional<BSDFSampleRecord>
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
     // Homework 1: implement this!
-    bool fromInnerToOut = dot(frame.n , dir_in) < 0;
-    if (fromInnerToOut) {
-        //只考虑Glass
+    if(dot(frame.n, dir_in) <= 0){
+        // only glass
         DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
-        return this->operator()(glass);
+        return (*this)(glass);
     }
-    else {
+    else{
+        Real result;
+
+        Real specular = eval(bsdf.specular, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real specular_transmission = eval(bsdf.specular_transmission, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real metallic = eval(bsdf.metallic, vertex.uv, vertex.uv_screen_size, texture_pool);
         Real cc = eval(bsdf.clearcoat, vertex.uv, vertex.uv_screen_size, texture_pool);
+        Real sh = eval(bsdf.sheen, vertex.uv, vertex.uv_screen_size, texture_pool);
 
-        //Sheen 比重太小，采样这里忽略
+        std::vector<Real> weights;
+        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
+        weights.pop_back();
+        Real totalWeight = 0;
+        for(auto w : weights){ totalWeight += w; }
+        for(Real& w : weights){ w /= totalWeight; }
+        for(int i = 1; i < weights.size(); i++){
+            weights[i] += weights[i-1]; // CDF
+        }
+
+        // check rnd_param_w in which range
+        Real rnd = rnd_param_w;
+        int index = weights.size() - 1;
+        for (int i = 0; i < weights.size(); i++) {
+            if (rnd <= weights[i]) {
+                index = i;
+                break;
+            }
+        }
+
         DisneyDiffuse diffuse = {bsdf.base_color, bsdf.roughness, bsdf.subsurface};
         DisneyClearcoat clearcoat = {bsdf.clearcoat_gloss};
         DisneyMetal metal = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic};
         DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
 
-        std::vector<Real> weights;
-        CalculateWeights(specular_transmission, metallic, cc, 0, weights);
-        Real currentRange = 0;
-        Real randomNumer = rnd_param_w;
-        int targetIndex = 0;
-        for ( int i = 0; i< 4; i++) {
-            currentRange += weights[i];
-            if (randomNumer <= currentRange) {
-                targetIndex = i;
-            }
-        }
-
-        switch(targetIndex){
+        switch(index){
             case 0:
                 return (*this)(diffuse);
             case 1:
