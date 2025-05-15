@@ -44,6 +44,7 @@ struct compute_shading_info_op {
     ShadingInfo operator()(const TriangleMesh &mesh) const;
 
     const IntersectPoint &vertex;
+    const Spectrum& normal_map_spectrum;
 };
 
 #include "shapes/sphere.inl"
@@ -74,6 +75,6 @@ void init_sampling_dist(Shape &shape) {
     return std::visit(init_sampling_dist_op{}, shape);
 }
 
-ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex) {
-    return std::visit(compute_shading_info_op{vertex}, shape);
+ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex, const Spectrum& normal_map_spectrum) {
+    return std::visit(compute_shading_info_op{vertex, normal_map_spectrum}, shape);
 }

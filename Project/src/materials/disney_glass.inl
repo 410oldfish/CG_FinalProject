@@ -10,6 +10,7 @@ Spectrum eval_op::operator()(const DisneyGlass &bsdf) const {
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     Spectrum base_color = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real roughness = eval(bsdf.roughness, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real aniso = eval(bsdf.anisotropic, vertex.uv, vertex.uv_screen_size, texture_pool);
@@ -58,6 +59,7 @@ Real pdf_sample_bsdf_op::operator()(const DisneyGlass &bsdf) const {
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     // Homework 1: implement this!
     Spectrum base_color = eval(bsdf.base_color, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real roughness = eval(bsdf.roughness, vertex.uv, vertex.uv_screen_size, texture_pool);
@@ -105,6 +107,7 @@ std::optional<BSDFSampleRecord>
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     //glass的采样跟金属一样，在specular上根据微表面模型采样出一个随机法线，然后根据随机数在菲尼尔系数的区间，决定入射光与这条法线的交互是反射还是折射
     Real roughness = eval(bsdf.roughness, vertex.uv, vertex.uv_screen_size, texture_pool);
     Real aniso = eval(bsdf.anisotropic, vertex.uv, vertex.uv_screen_size, texture_pool);
@@ -136,4 +139,12 @@ std::optional<BSDFSampleRecord>
 
 TextureSpectrum get_texture_op::operator()(const DisneyGlass &bsdf) const {
     return bsdf.base_color;
+}
+
+Real get_ao_value_op::operator()(const DisneyGlass &bsdf) const{
+    return Real(1);
+}
+
+Spectrum get_normal_value_op::operator()(const DisneyGlass &bsdf) const{
+    return Spectrum(0);
 }

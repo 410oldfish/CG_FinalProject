@@ -1106,6 +1106,9 @@ std::tuple<std::string /* ID */, Material> parse_bsdf(
         Texture<Real> clearcoat = make_constant_float_texture(Real(0));
         Texture<Real> clearcoat_gloss = make_constant_float_texture(Real(1));
         Real eta = Real(1.5);
+        Texture<Spectrum> normal_map = make_constant_spectrum_texture(0);
+        Texture<Real> ao_map = make_constant_float_texture(Real(1));
+
         for (auto child : node.children()) {
             std::string name = child.attribute("name").value();
             if (name == "baseColor" || name == "base_color") {
@@ -1149,6 +1152,16 @@ std::tuple<std::string /* ID */, Material> parse_bsdf(
             } else if (name == "eta") {
                 eta = parse_float(child.attribute("value").value(), default_map);
             }
+
+            else if (name == "normalmap") {
+                normal_map = parse_spectrum_texture(
+                    child, texture_map, texture_pool, default_map);
+            }
+
+            else if (name == "aomap") {
+                ao_map = parse_float_texture(
+                    child, texture_map, texture_pool, default_map);
+            }
         }
         return std::make_tuple(id, DisneyBSDF{base_color,
                                               specular_transmission,
@@ -1162,7 +1175,9 @@ std::tuple<std::string /* ID */, Material> parse_bsdf(
                                               sheen_tint,
                                               clearcoat,
                                               clearcoat_gloss,
-                                              eta});
+                                              eta,
+                                                normal_map,
+                                                ao_map});
     } else if (type == "null") {
         // TODO: implement actual null BSDF (the ray will need to pass through the shape)
         return std::make_tuple(id, Lambertian{

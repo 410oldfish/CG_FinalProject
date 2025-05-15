@@ -1,3 +1,5 @@
+#include <float.h>
+
 uint32_t register_embree_op::operator()(const TriangleMesh &mesh) const {
     RTCGeometry rtc_geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
     // A geomID is the ID associated with the shape inside Embree.
@@ -140,10 +142,13 @@ ShadingInfo compute_shading_info_op::operator()(const TriangleMesh &mesh) const 
         Vector3 n0 = mesh.normals[index[0]],
                 n1 = mesh.normals[index[1]],
                 n2 = mesh.normals[index[2]];
+
+
         shading_normal = normalize(
-            (1 - vertex.st[0] - vertex.st[1]) * n0 + 
-                                vertex.st[0] * n1 +
-                                vertex.st[1] * n2);
+        (1 - vertex.st[0] - vertex.st[1]) * n0 +
+                      vertex.st[0] * n1 +
+                      vertex.st[1] * n2);
+
         // dpdu may not be orthogonal to shading normal:
         // subtract the projection of shading_normal onto dpdu to make them orthogonal
         tangent = normalize(dpdu - shading_normal * dot(shading_normal, dpdu));
@@ -163,7 +168,30 @@ ShadingInfo compute_shading_info_op::operator()(const TriangleMesh &mesh) const 
         bitangent = normalize(cross(shading_normal, tangent));
     }
 
+    Real handedness = (dot(cross(tangent, bitangent), shading_normal) < 0) ? -1.0f : 1.0f;
+    bitangent = handedness * normalize(cross(shading_normal, tangent));
+
+    Vector3 normal_from_vt = shading_normal;
+    //如果有法线贴图，以这里的法线为准
+    if (length(normal_map_spectrum) > DBL_EPSILON) {
+
+        Vector3 normalTS = normal_map_spectrum * 2.0 - Vector3(1);
+        normalTS = normalize(normalTS);
+        Vector3 normalWS =
+          tangent * normalTS.x
+        + bitangent * normalTS.y
+        + shading_normal * normalTS.z;
+
+        normalWS = normalize(normalWS);
+        shading_normal = normalWS;
+
+        tangent = normalize(tangent - normalWS * dot(normalWS, tangent));
+        bitangent = normalize(cross(normalWS, tangent));
+        Real handedness = dot(cross(tangent, bitangent), normalWS) < 0 ? -1.0f : 1.0f;
+        bitangent = handedness * bitangent;
+    }
+
     Frame shading_frame(tangent, bitangent, shading_normal);
     return ShadingInfo{uv, shading_frame, mean_curvature,
-                       max(length(dpdu), length(dpdv)) /* inv_uv_size */};
+                       max(length(dpdu), length(dpdv)) /* inv_uv_size */, normal_from_vt};
 }

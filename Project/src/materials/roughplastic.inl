@@ -8,7 +8,7 @@ Spectrum eval_op::operator()(const RoughPlastic &bsdf) const {
     }
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
-    if (dot(frame.n, dir_in) < 0) {
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
 
@@ -70,7 +70,7 @@ Real pdf_sample_bsdf_op::operator()(const RoughPlastic &bsdf) const {
     }
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
-    if (dot(frame.n, dir_in) < 0) {
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
 
@@ -117,7 +117,7 @@ std::optional<BSDFSampleRecord>
     }
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
-    if (dot(frame.n, dir_in) < 0) {
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
 
@@ -161,4 +161,12 @@ std::optional<BSDFSampleRecord>
 
 TextureSpectrum get_texture_op::operator()(const RoughPlastic &bsdf) const {
     return bsdf.diffuse_reflectance;
+}
+
+Real get_ao_value_op::operator()(const RoughPlastic &bsdf) const{
+    return Real(1);
+}
+
+Spectrum get_normal_value_op::operator()(const RoughPlastic &bsdf) const{
+    return Spectrum(0);
 }

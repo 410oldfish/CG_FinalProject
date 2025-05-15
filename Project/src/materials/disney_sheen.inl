@@ -63,3 +63,11 @@ std::optional<BSDFSampleRecord>
 TextureSpectrum get_texture_op::operator()(const DisneySheen &bsdf) const {
     return bsdf.base_color;
 }
+
+Real get_ao_value_op::operator()(const DisneySheen &bsdf) const{
+    return Real(1);
+}
+
+Spectrum get_normal_value_op::operator()(const DisneySheen &bsdf) const{
+    return Spectrum(0);
+}

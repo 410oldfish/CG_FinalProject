@@ -23,8 +23,12 @@ Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
                    dot(vertex.geometric_normal, dir_out) > 0;
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
+        frame = -frame;
+    }
+
     // Homework 1: implement this!
-    if(!reflect || dot(frame.n, dir_in) <= 0){
+    if(!reflect || dot( frame.n, dir_in) <= 0){
         // only glass
         DisneyGlass glass = {bsdf.base_color, bsdf.roughness, bsdf.anisotropic, bsdf.eta};
         return (*this)(glass);
@@ -62,7 +66,6 @@ Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
         Spectrum f_Glass = make_zero_spectrum();
         Spectrum f_Metal = make_zero_spectrum();
 
-
         f_Glass = this->operator()(glass_bsdf);
         if (dot(vertex.shading_frame.n, dir_out) > 0)
         {
@@ -86,9 +89,14 @@ Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
 
 Real pdf_sample_bsdf_op::operator()(const DisneyBSDF &bsdf) const {
     bool reflect = dot(vertex.geometric_normal, dir_in) *
-                   dot(vertex.geometric_normal, dir_out) > 0;
+               dot(vertex.geometric_normal, dir_out) > 0;
+
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
+        frame = -frame;
+    }
+
     // Homework 1: implement this!
     if(!reflect || dot(frame.n, dir_in) <= 0){
         // only glass
@@ -134,8 +142,13 @@ Real pdf_sample_bsdf_op::operator()(const DisneyBSDF &bsdf) const {
 
 std::optional<BSDFSampleRecord>
         sample_bsdf_op::operator()(const DisneyBSDF &bsdf) const {
+
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
+        frame = -frame;
+    }
+
     // Homework 1: implement this!
     if(dot(frame.n, dir_in) <= 0){
         // only glass
@@ -187,6 +200,16 @@ std::optional<BSDFSampleRecord>
                 return (*this)(glass);
         }
     }
+}
+
+Real get_ao_value_op::operator()(const DisneyBSDF &bsdf) const{
+    Real ao_value = eval(bsdf.ao_map, vertex.uv, vertex.uv_screen_size, texture_pool);
+    return ao_value;
+}
+
+Spectrum get_normal_value_op::operator()(const DisneyBSDF &bsdf) const{
+    Spectrum normal_spectrum = eval(bsdf.normal_map, vertex.uv, vertex.uv_screen_size, texture_pool);
+    return normal_spectrum;
 }
 
 TextureSpectrum get_texture_op::operator()(const DisneyBSDF &bsdf) const {

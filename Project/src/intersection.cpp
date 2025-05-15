@@ -1,4 +1,7 @@
 #include "intersection.h"
+
+#include <float.h>
+
 #include "material.h"
 #include "ray.h"
 #include "scene.h"
@@ -47,7 +50,11 @@ std::optional<IntersectPoint> intersect(const Scene &scene,
     vertex.exterior_medium_id = get_exterior_medium_id(shape);
     vertex.st = Vector2{rtc_hit.u, rtc_hit.v};
 
-    ShadingInfo shading_info = compute_shading_info(scene.shapes[vertex.shape_id], vertex);
+    const Material &mat = scene.materials[vertex.material_id];
+    auto normal_spectrum = get_normal_value(mat, vertex, scene.texture_pool);
+
+    ShadingInfo shading_info = compute_shading_info(scene.shapes[vertex.shape_id], vertex, normal_spectrum);
+    vertex.geometric_normal = shading_info.normal_from_vn;//这里在OBJ文件中有vn的时候会计算vn插值，比直接用法线计算更准确
     vertex.shading_frame = shading_info.shading_frame;
     vertex.uv = shading_info.uv;
     vertex.mean_curvature = shading_info.mean_curvature;
@@ -57,8 +64,8 @@ std::optional<IntersectPoint> intersect(const Scene &scene,
     vertex.uv_screen_size = vertex.ray_radius / shading_info.inv_uv_size;
 
     // Flip the geometry normal to the same direction as the shading normal
-    if (dot(vertex.geometric_normal, vertex.shading_frame.n) < 0) {
-        vertex.geometric_normal = -vertex.geometric_normal;
+    if (dot(vertex.geometric_normal, vertex.shading_frame.n) < -DBL_EPSILON) {
+        vertex.shading_frame = Frame(vertex.geometric_normal);
     }
 
     return vertex;

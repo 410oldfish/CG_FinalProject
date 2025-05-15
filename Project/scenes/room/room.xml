@@ -125,15 +125,19 @@
 	</texture>
 
 	<texture type="bitmap" id="Canno_Metallic">
-		<string name="filename" value="models/Canno/textures/QF1_MetallicSmoothness.png"/>
+		<string name="filename" value="models/Canno/textures/QF1_Metallic.png"/>
 	</texture>
 
 	<texture type="bitmap" id="Canno_Normal">
 		<string name="filename" value="models/Canno/textures/QF1_Normal.png"/>
 	</texture>
 
-	<texture type="bitmap" id="Canno_Specular">
-		<string name="filename" value="models/Canno/textures/QF1_SpecularSmoothness.png"/>
+	<texture type="bitmap" id="Canno_AO">
+		<string name="filename" value="models/Canno/textures/QF1_AO.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_Roughness">
+		<string name="filename" value="models/Canno/textures/QF1_Roughness.png"/>
 	</texture>
 
 	<bsdf type="disneybsdf" id="Canno_Mat">
@@ -141,8 +145,8 @@
 		<float name="specularTransmission" value="0.0"/>
 		<ref name="metallic" id = "Canno_Metallic"/>
 		<float name="subsurface" value="0.0"/>
-		<ref name="specular" id="Canno_Specular"/>
-		<float name="roughness" value="0.6"/>
+		<float name="specular" value="0.0"/>
+		<ref name="roughness" id="Canno_Roughness"/>
 		<float name="specularTint" value="0.0"/>
 		<float name="anisotropic" value="0.0"/>
 		<float name="sheen" value="0.0"/>

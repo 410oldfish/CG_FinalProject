@@ -8,6 +8,7 @@ Spectrum eval_op::operator()(const RoughDielectric &bsdf) const {
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     // If we are going into the surface, then we use normal eta
     // (internal/external), otherwise we use external/internal.
     Real eta = dot(vertex.geometric_normal, dir_in) > 0 ? bsdf.eta : 1 / bsdf.eta;
@@ -79,6 +80,7 @@ Real pdf_sample_bsdf_op::operator()(const RoughDielectric &bsdf) const {
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     // If we are going into the surface, then we use normal eta
     // (internal/external), otherwise we use external/internal.
     Real eta = dot(vertex.geometric_normal, dir_in) > 0 ? bsdf.eta : 1 / bsdf.eta;
@@ -130,6 +132,7 @@ std::optional<BSDFSampleRecord>
     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
         frame = -frame;
     }
+
     Real roughness = eval(
         bsdf.roughness, vertex.uv, vertex.uv_screen_size, texture_pool);
     // Clamp roughness to avoid numerical issues.
@@ -177,4 +180,12 @@ std::optional<BSDFSampleRecord>
 
 TextureSpectrum get_texture_op::operator()(const RoughDielectric &bsdf) const {
     return bsdf.specular_reflectance;
+}
+
+Real get_ao_value_op::operator()(const RoughDielectric &bsdf) const{
+    return Real(1);
+}
+
+Spectrum get_normal_value_op::operator()(const RoughDielectric &bsdf) const{
+    return Spectrum(0);
 }

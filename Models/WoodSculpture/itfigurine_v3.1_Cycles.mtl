@@ -1,0 +1,14 @@
+# Blender 4.4.3 MTL File: 'itfigurine_v3.1_Cycles.blend'
+# www.blender.org
+
+newmtl itfbody_Mat
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd textures/itfigurine_itfbody_Mat_BaseColor.png
+map_Ns textures/itfigurine_itfbody_Mat_Roughness.png
+map_refl textures/itfigurine_itfbody_Mat_Metallic.png
+map_Bump -bm 1.000000 textures/itfigurine_itfbody_Mat_Normal.png

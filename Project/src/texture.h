@@ -124,6 +124,7 @@ struct eval_texture_op {
     const Real &footprint;
     const TexturePool &pool;
 };
+
 template <typename T>
 T eval_texture_op<T>::operator()(const ConstantTexture<T> &t) const {
     return t.value;

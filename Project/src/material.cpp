@@ -77,6 +77,36 @@ struct get_texture_op {
     TextureSpectrum operator()(const DisneyBSDF &bsdf) const;
 };
 
+struct get_ao_value_op {
+    Real operator()(const DisneyBSDF &bsdf) const;
+    Real operator()(const Lambertian &bsdf) const;
+    Real operator()(const RoughPlastic &bsdf) const;
+    Real operator()(const RoughDielectric &bsdf) const;
+    Real operator()(const DisneyDiffuse &bsdf) const;
+    Real operator()(const DisneyMetal &bsdf) const;
+    Real operator()(const DisneyGlass &bsdf) const;
+    Real operator()(const DisneyClearcoat &bsdf) const;
+    Real operator()(const DisneySheen &bsdf) const;
+
+    const IntersectPoint &vertex;
+    const TexturePool &texture_pool;
+};
+
+struct get_normal_value_op {
+    Spectrum operator()(const DisneyBSDF &bsdf) const;
+    Spectrum operator()(const Lambertian &bsdf) const;
+    Spectrum operator()(const RoughPlastic &bsdf) const;
+    Spectrum operator()(const RoughDielectric &bsdf) const;
+    Spectrum operator()(const DisneyDiffuse &bsdf) const;
+    Spectrum operator()(const DisneyMetal &bsdf) const;
+    Spectrum operator()(const DisneyGlass &bsdf) const;
+    Spectrum operator()(const DisneyClearcoat &bsdf) const;
+    Spectrum operator()(const DisneySheen &bsdf) const;
+
+    const IntersectPoint &vertex;
+    const TexturePool &texture_pool;
+};
+
 #include "materials/lambertian.inl"
 #include "materials/roughplastic.inl"
 #include "materials/roughdielectric.inl"
@@ -116,6 +146,14 @@ Real pdf_sample_bsdf(const Material &material,
                      TransportDirection dir) {
     return std::visit(pdf_sample_bsdf_op{
         dir_in, dir_out, vertex, texture_pool, dir}, material);
+}
+
+Real get_ao_value(const Material &material,const IntersectPoint &vertex, const TexturePool &texture_pool) {
+    return std::visit(get_ao_value_op{vertex, texture_pool}, material);
+}
+
+Spectrum get_normal_value(const Material &material,const IntersectPoint &vertex, const TexturePool &texture_pool) {
+    return std::visit(get_normal_value_op{vertex, texture_pool}, material);
 }
 
 TextureSpectrum get_texture(const Material &material) {

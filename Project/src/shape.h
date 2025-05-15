@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 
+#include "spectrum.h"
+
 struct PointAndNormal;
 struct IntersectPoint;
 
@@ -17,6 +19,7 @@ struct ShadingInfo {
     Real mean_curvature; // 0.5 * (dN/du + dN/dv)
     // Stores min(length(dp/du), length(dp/dv)), for ray differentials.
     Real inv_uv_size;
+    Vector3 normal_from_vn;
 };
 
 /// A Shape is a geometric entity that describes a surface. E.g., a sphere, a triangle mesh, a NURBS, etc.
@@ -74,7 +77,7 @@ Real surface_area(const Shape &shape);
 void init_sampling_dist(Shape &shape);
 
 /// Embree doesn't calculate some shading information for us. We have to do it ourselves.
-ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex);
+ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex, const Spectrum& normalmap_spectrum);
 
 inline void set_material_id(Shape &shape, int material_id) {
     std::visit([&](auto &s) { s.material_id = material_id; }, shape);

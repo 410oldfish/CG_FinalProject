@@ -39,6 +39,10 @@ Real pdf_sample_bsdf_op::operator()(const DisneyClearcoat &bsdf) const {
     }
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
+     if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
+         frame = -frame;
+     }
+
     if (dot(frame.n, dir_in) <= 0) {
         return 0;
     }
@@ -66,6 +70,10 @@ std::optional<BSDFSampleRecord>
     }
     // Flip the shading frame if it is inconsistent with the geometry normal
     Frame frame = vertex.shading_frame;
+    if (dot(frame.n, dir_in) * dot(vertex.geometric_normal, dir_in) < 0) {
+        frame = -frame;
+    }
+
     if (dot(frame.n, dir_in) <= 0) {
         return {};
     }
@@ -92,4 +100,12 @@ std::optional<BSDFSampleRecord>
 
 TextureSpectrum get_texture_op::operator()(const DisneyClearcoat &bsdf) const {
     return make_constant_spectrum_texture(make_zero_spectrum());
+}
+
+Real get_ao_value_op::operator()(const DisneyClearcoat &bsdf) const{
+    return Real(1);
+}
+
+Spectrum get_normal_value_op::operator()(const DisneyClearcoat &bsdf) const{
+    return Spectrum(0);
 }

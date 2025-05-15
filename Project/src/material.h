@@ -81,6 +81,8 @@ struct DisneySheen {
 
 /// For homework 1: the whole Disney BRDF.
 struct DisneyBSDF {
+
+
     Texture<Spectrum> base_color;
     Texture<Real> specular_transmission;
     Texture<Real> metallic;
@@ -95,6 +97,10 @@ struct DisneyBSDF {
     Texture<Real> clearcoat_gloss;
 
     Real eta;
+
+    //Textures
+    Texture<Spectrum> normal_map;
+    Texture1 ao_map;
 };
 
 // To add more materials, first create a struct for the material, then overload the () operators for all the
@@ -168,3 +174,7 @@ Real pdf_sample_bsdf(const Material &material,
 /// Return a texture from the material for debugging.
 /// If the material contains multiple textures, return an arbitrary one.
 TextureSpectrum get_texture(const Material &material);
+
+Real get_ao_value(const Material &material,const IntersectPoint &vertex, const TexturePool &texture_pool);
+
+Spectrum get_normal_value(const Material &material,const IntersectPoint &vertex, const TexturePool &texture_pool);
