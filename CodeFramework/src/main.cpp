@@ -20,7 +20,7 @@ int main(int argc, char** argv)
     }
 
     if (argc>=3){
-        scene.spp = (int)atoi(argv[1]);
+        scene.spp = (int)atoi(argv[2]);
     }
     else{
         scene.spp = 32;
