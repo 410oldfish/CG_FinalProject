@@ -4,6 +4,7 @@
 #include "s2_modelling.hpp"
 #include "s3_rendering.hpp"
 #include "s4_postprocessing.hpp"
+#include "Material.hpp"
 
 int main(int argc, char** argv)
 {
@@ -26,10 +27,11 @@ int main(int argc, char** argv)
         scene.spp = 32;
     }
     // Stage 1
+    std::vector<Material*> materials;
     s1_preprocessing(); // Do Nothing
 
     // Stage 2
-    s2_modelling(scene);
+    s2_modelling(scene, materials);
 
     // Stage 3
     auto start = std::chrono::system_clock::now();
@@ -44,6 +46,11 @@ int main(int argc, char** argv)
     std::cout << "Time taken: " << std::chrono::duration_cast<std::chrono::hours>(stop - start).count() << " hours\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::minutes>(stop - start).count() << " minutes\n";
     std::cout << "          : " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << " seconds\n";
+
+
+    for (auto& material : materials) {
+        delete material; // Free the memory allocated for each material
+    }
 
     return 0;
 }

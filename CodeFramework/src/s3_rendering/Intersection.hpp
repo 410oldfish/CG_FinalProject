@@ -28,6 +28,6 @@ struct Intersection
     Vector3f normal;
     double tnear;
     Object* obj;
-    std::shared_ptr<Material> material;
+    Material* material;
 };
 #endif //RAYTRACING_INTERSECTION_H

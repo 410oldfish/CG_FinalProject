@@ -21,12 +21,14 @@ public:
     Vector2f t0, t1, t2; // texture coords
     Vector3f normal;
     float area;
-    std::shared_ptr<Material> m;
+    Material* m; // material of the triangle
 
     // Constructor. Precompute the normal and area of the triangle
     // @ param _v0, _v1, _v2 are the vertices of the triangle
     // @ param _m is the material of the triangle
-    Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, std::shared_ptr<Material> _m = std::make_shared<Material>(Material()))
+    // Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, std::shared_ptr<Material> _m = std::make_shared<Material>(Material()))
+    //     : v0(_v0), v1(_v1), v2(_v2), m(_m)
+    Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, Material* _m = new Material(Material()))
         : v0(_v0), v1(_v1), v2(_v2), m(_m)
     {
         e1 = v1 - v0;
@@ -98,9 +100,12 @@ public:
     // @ param numTris is the number of triangles
     // @ param st is the array of texture coordinates (1 for each vertex)
     // @ param mt is the material of the mesh
+    // MeshTriangle(const Vector3f* verts, const uint32_t* vertsIndex, const uint32_t& numTris, 
+    //     const Vector2f* st, std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
+    // {   
     MeshTriangle(const Vector3f* verts, const uint32_t* vertsIndex, const uint32_t& numTris, 
-        const Vector2f* st, std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
-    {   
+                 const Vector2f* st, Material* mt = new Material(Material()))
+    {
         // Loop through vertsIndex to find out the number of vertices - 1, i.e., the max vertex index
         uint32_t maxIndex = 0;
         for (uint32_t i = 0; i < numTris * 3; ++i)
@@ -181,7 +186,7 @@ public:
     // @ param offset is the offset to be added to each vertex position
     // @ param mt is the material of the mesh
     MeshTriangle(const std::string& filename, Vector3f offset, 
-                 std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
+                    Material* mt = new Material(Material()))
     {   
         // Load the OBJ file using the objl::Loader class
         objl::Loader loader;
@@ -384,7 +389,8 @@ public:
     std::unique_ptr<BVHAccel> bvh; // BVH tree for fast intersection testing
     float area; // surface area of the mesh, used for sampling
 
-    std::shared_ptr<Material> m; // material of the mesh
+    // std::shared_ptr<Material> m; // material of the mesh
+    Material* m; // material of the mesh
 };
 
 

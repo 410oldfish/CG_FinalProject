@@ -107,7 +107,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
     Vector2f texture_hit = inter.tcoords; // Texture Barycentric coordinates at the hit point
     Object * object_hit = inter.obj; // Object that was hit
     // Material * material_hit = inter.material; // Material of the object that was hit
-    std::shared_ptr<Material> material_hit = inter.material; // Material of the object that was hit
+    Material* material_hit = inter.material; // Material of the object that was hit
     Vector3f dir_hit_to_view = -ray.direction.normalized(); // outgoing light direction from the hit point to the camera
     Vector3f dir_view_to_hit = ray.direction.normalized(); // direction from the camera to the hit point
     float kd = material_hit->Kd; // diffuse reflection coefficient

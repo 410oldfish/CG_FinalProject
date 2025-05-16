@@ -3,78 +3,98 @@
 #include "Triangle.hpp"
 #include "Sphere.hpp"
 
-inline void s2_modelling(Scene& scene)
+inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
 {
 
     // Diffuse Materials
-    std::shared_ptr<Material> pink = std::make_shared<Material>(DIFFUSE, Vector3f(0.72f, 0.48f, 0.56f));
+    // std::shared_ptr<Material> pink = std::make_shared<Material>(DIFFUSE, Vector3f(0.72f, 0.48f, 0.56f));
+    Material* pink = new Material(DIFFUSE, Vector3f(0.72f, 0.48f, 0.56f));
     pink->Kd = 0.8f; // diffuse reflection coefficient
     pink->Ks = 0.2f; // specular reflection coefficient
     pink->ior = 1.46f; // refractive index
+    materials.push_back(pink);
 
 
-    std::shared_ptr<Material> blue = std::make_shared<Material>(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
+    // std::shared_ptr<Material> blue = std::make_shared<Material>(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
+    Material* blue = new Material(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
     blue->Kd = 0.8f; // diffuse reflection coefficient
     blue->Ks = 0.2f; // specular reflection coefficient
     blue->ior = 1.46f; // refractive index
+    materials.push_back(blue);
 
 
-    std::shared_ptr<Material> green = std::make_shared<Material>(DIFFUSE, Vector3f(0.5f, 0.7f, 0.13f));
+    // std::shared_ptr<Material> green = std::make_shared<Material>(DIFFUSE, Vector3f(0.5f, 0.7f, 0.13f));
+    Material* green = new Material(DIFFUSE, Vector3f(0.5f, 0.7f, 0.13f));
     green->Kd = 0.8f; // diffuse reflection coefficient
     green->Ks = 0.2f; // specular reflection coefficient
     green->ior = 1.46f; // refractive index
+    materials.push_back(green);
 
 
-    std::shared_ptr<Material> white = std::make_shared<Material>(DIFFUSE, Vector3f(0.48f, 0.45f, 0.4f));
+    // std::shared_ptr<Material> white = std::make_shared<Material>(DIFFUSE, Vector3f(0.48f, 0.45f, 0.4f));
+    Material* white = new Material(DIFFUSE, Vector3f(0.48f, 0.45f, 0.4f));
     white->Kd = 0.8f; // diffuse reflection coefficient
     white->Ks = 0.2f; // specular reflection coefficient
     white->ior = 5.f; // refractive index
+    materials.push_back(white);
 
-    std::shared_ptr<Material> red = std::make_shared<Material>(DIFFUSE, Vector3f(0.8f, 0.2f, 0.0f));
+    // std::shared_ptr<Material> red = std::make_shared<Material>(DIFFUSE, Vector3f(0.8f, 0.2f, 0.0f));
+    Material* red = new Material(DIFFUSE, Vector3f(0.8f, 0.2f, 0.0f));
     red->Kd = 0.8f; // diffuse reflection coefficient
     red->Ks = 0.2f; // specular reflection coefficient
     red->ior = 1.46f; // refractive index
+    materials.push_back(red);
 
     // Glass Material
-    std::shared_ptr<Material> glass = std::make_shared<Material>(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
+    // std::shared_ptr<Material> glass = std::make_shared<Material>(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
+    Material* glass = new Material(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
     glass->Kd = 0.f; // diffuse reflection coefficient
     glass->Ks = 1.f; // specular reflection coefficient
     glass->ior = 1.5f; // refractive index
     glass->opaqueness=0;
+    materials.push_back(glass);
 
-    std::shared_ptr<Material> mirror = std::make_shared<Material>(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
+    // std::shared_ptr<Material> mirror = std::make_shared<Material>(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
+    Material* mirror = new Material(GLASS, Vector3f(0.9f, 0.9f, 0.9f));
     mirror->Kd = 0.f; // diffuse reflection coefficient
     mirror->Ks = 1.f; // specular reflection coefficient
     mirror->ior = 100.f; // refractive index
+    materials.push_back(mirror);
 
     // Emissive Material
-    std::shared_ptr<Material> light = std::make_shared<Material>(EMIT, Vector3f(1));
+    // std::shared_ptr<Material> light = std::make_shared<Material>(EMIT, Vector3f(1));
+    Material* light = new Material(EMIT, Vector3f(1));
     light->Kd = 0.8f; // diffuse reflection coefficient
     light->Ks = 0.2f; // specular reflection coefficient
     light->ior = 1.5f; // refractive index
     light->m_emission=100; // set light intensity
+    materials.push_back(light);
 
-    // =======================
 
-
-    std::shared_ptr<Material> frosted_glass = std::make_shared<Material>(GLASS, Vector3f(0.5f, 0.7f, 0.13f));
+    // std::shared_ptr<Material> frosted_glass = std::make_shared<Material>(GLASS, Vector3f(0.5f, 0.7f, 0.13f));
+    Material* frosted_glass = new Material(GLASS, Vector3f(0.5f, 0.7f, 0.13f));
     frosted_glass->Kd = 0.2;
     frosted_glass->Ks = 0.8;
     frosted_glass->ior = 1.5;
     frosted_glass->opaqueness = 0.2;
+    materials.push_back(frosted_glass);
 
 
-    std::shared_ptr<Material> gold = std::make_shared<Material>(GLASS, Vector3f(255.f/255.f, 215.f/255.f, 0.0f));
+    // std::shared_ptr<Material> gold = std::make_shared<Material>(GLASS, Vector3f(255.f/255.f, 215.f/255.f, 0.0f));
+    Material* gold = new Material(GLASS, Vector3f(255.f/255.f, 215.f/255.f, 0.0f));
     gold->Kd = 0.5f; // diffuse reflection coefficient
     gold->Ks = 0.5f; // specular reflection coefficient
     gold->ior = 100.f; // refractive index
     gold->opaqueness = 1;
+    materials.push_back(gold);
 
-    std::shared_ptr<Material> stone = std::make_shared<Material>(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
+    // std::shared_ptr<Material> stone = std::make_shared<Material>(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
+    Material* stone = new Material(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
     stone->Kd = 0.8f;
     stone->Ks = 0.f;
     stone->ior = 1.5f;
     stone->opaqueness = 1;
+    materials.push_back(stone);
 
 
     
@@ -122,7 +142,8 @@ inline void s2_modelling(Scene& scene)
     // 0 ---- 1
     uint32_t vertIndex[6] = {0, 2, 1, 2,0,3};
     // Diffuse Material, black color (will not be used)
-    std::shared_ptr<Material> mfloor = std::make_shared<Material>(DIFFUSE, Vector3f(0));
+    // std::shared_ptr<Material> mfloor = std::make_shared<Material>(DIFFUSE, Vector3f(0));
+    Material* mfloor = new Material(DIFFUSE, Vector3f(0));
     // use a checkerboard texture pattern
     mfloor->textured=true;
     // Add the two triangles to the scene
