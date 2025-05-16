@@ -77,7 +77,7 @@ Real surface_area(const Shape &shape);
 void init_sampling_dist(Shape &shape);
 
 /// Embree doesn't calculate some shading information for us. We have to do it ourselves.
-ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex, const Spectrum& normalmap_spectrum);
+ShadingInfo compute_shading_info(const Shape &shape, const IntersectPoint &vertex);
 
 inline void set_material_id(Shape &shape, int material_id) {
     std::visit([&](auto &s) { s.material_id = material_id; }, shape);

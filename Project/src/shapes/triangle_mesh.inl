@@ -76,6 +76,29 @@ void init_sampling_dist_op::operator()(TriangleMesh &mesh) const {
     mesh.total_area = total_area;
 }
 
+Vector2 compute_uv_op::operator()(const TriangleMesh &mesh) const {
+    // Get UVs of the three vertices
+    assert(vertex.primitive_id >= 0);
+    Vector3i index = mesh.indices[vertex.primitive_id];
+    Vector2 uvs[3];
+    if (mesh.uvs.size() > 0) {
+        uvs[0] = mesh.uvs[index[0]];
+        uvs[1] = mesh.uvs[index[1]];
+        uvs[2] = mesh.uvs[index[2]];
+    } else {
+        // Use barycentric coordinates
+        uvs[0] = Vector2{0, 0};
+        uvs[1] = Vector2{1, 0};
+        uvs[2] = Vector2{1, 1};
+    }
+    // Barycentric coordinates are stored in vertex.st
+    Vector2 uv = (1 - vertex.st[0] - vertex.st[1]) * uvs[0] +
+                 vertex.st[0] * uvs[1] +
+                 vertex.st[1] * uvs[2];
+
+    return uv;
+}
+
 ShadingInfo compute_shading_info_op::operator()(const TriangleMesh &mesh) const {
     // Get UVs of the three vertices
     assert(vertex.primitive_id >= 0);
@@ -168,28 +191,10 @@ ShadingInfo compute_shading_info_op::operator()(const TriangleMesh &mesh) const 
         bitangent = normalize(cross(shading_normal, tangent));
     }
 
-    Real handedness = (dot(cross(tangent, bitangent), shading_normal) < 0) ? -1.0f : 1.0f;
-    bitangent = handedness * normalize(cross(shading_normal, tangent));
+    // Real handedness = (dot(cross(tangent, bitangent), shading_normal) < 0) ? -1.0f : 1.0f;
+    // bitangent = handedness * normalize(cross(shading_normal, tangent));
 
     Vector3 normal_from_vt = shading_normal;
-    //如果有法线贴图，以这里的法线为准
-    if (length(normal_map_spectrum) > DBL_EPSILON) {
-
-        Vector3 normalTS = normal_map_spectrum * 2.0 - Vector3(1);
-        normalTS = normalize(normalTS);
-        Vector3 normalWS =
-          tangent * normalTS.x
-        + bitangent * normalTS.y
-        + shading_normal * normalTS.z;
-
-        normalWS = normalize(normalWS);
-        shading_normal = normalWS;
-
-        tangent = normalize(tangent - normalWS * dot(normalWS, tangent));
-        bitangent = normalize(cross(normalWS, tangent));
-        Real handedness = dot(cross(tangent, bitangent), normalWS) < 0 ? -1.0f : 1.0f;
-        bitangent = handedness * bitangent;
-    }
 
     Frame shading_frame(tangent, bitangent, shading_normal);
     return ShadingInfo{uv, shading_frame, mean_curvature,

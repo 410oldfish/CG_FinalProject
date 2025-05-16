@@ -51,9 +51,8 @@ std::optional<IntersectPoint> intersect(const Scene &scene,
     vertex.st = Vector2{rtc_hit.u, rtc_hit.v};
 
     const Material &mat = scene.materials[vertex.material_id];
-    auto normal_spectrum = get_normal_value(mat, vertex, scene.texture_pool);
 
-    ShadingInfo shading_info = compute_shading_info(scene.shapes[vertex.shape_id], vertex, normal_spectrum);
+    ShadingInfo shading_info = compute_shading_info(scene.shapes[vertex.shape_id], vertex);
     vertex.geometric_normal = shading_info.normal_from_vn;//这里在OBJ文件中有vn的时候会计算vn插值，比直接用法线计算更准确
     vertex.shading_frame = shading_info.shading_frame;
     vertex.uv = shading_info.uv;
@@ -62,6 +61,13 @@ std::optional<IntersectPoint> intersect(const Scene &scene,
     // vertex.ray_radius stores approximatedly dp/dx, 
     // we get uv_screen_size (du/dx) using (dp/dx)/(dp/du)
     vertex.uv_screen_size = vertex.ray_radius / shading_info.inv_uv_size;
+
+    //这个时候vertex的参数才齐全，才能开始从法线贴图中拿到值
+    auto normal_spectrum = get_normal_value(mat, vertex, scene.texture_pool);
+    if (length(normal_spectrum) > DBL_EPSILON) {
+        auto normalW = normalize(to_world(vertex.shading_frame, normalize(normal_spectrum)));
+        vertex.shading_frame = Frame(normalW);
+    }
 
     // Flip the geometry normal to the same direction as the shading normal
     if (dot(vertex.geometric_normal, vertex.shading_frame.n) < -DBL_EPSILON) {

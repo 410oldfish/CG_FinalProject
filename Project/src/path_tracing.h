@@ -135,7 +135,7 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
 
         Real G;
         if (bsdf_intersect_point) {
-            G = fabs(dot(dir_bsdf, bsdf_intersect_point->shading_frame.n)) /
+            G = fabs(dot(dir_bsdf, bsdf_intersect_point->geometric_normal)) /
                 distance_squared(bsdf_intersect_point->position, intersect_point.position);
         } else {
             // We hit nothing, set G to 1 to account for the environment map contribution.
@@ -163,7 +163,7 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
                 int light_id = get_area_light_id(scene.shapes[bsdf_intersect_point->shape_id]);
                 assert(light_id >= 0);
                 const Light &light = scene.lights[light_id];
-                PointAndNormal light_point{bsdf_intersect_point->position, bsdf_intersect_point->shading_frame.n};
+                PointAndNormal light_point{bsdf_intersect_point->position, bsdf_intersect_point->geometric_normal};
                 Real pdf_indirect_light = light_pmf(scene, light_id) *
                     pdf_point_on_light(light, light_point, intersect_point.position, scene);
                 Real MIS_weight_indirect = (pdf_indirect*pdf_indirect) / (pdf_indirect_light*pdf_indirect_light + pdf_indirect*pdf_indirect);

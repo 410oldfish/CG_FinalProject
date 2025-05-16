@@ -240,6 +240,10 @@ Real pdf_point_on_shape_op::operator()(const Sphere &sphere) const {
 void init_sampling_dist_op::operator()(Sphere &sphere) const {
 }
 
+Vector2 compute_uv_op::operator()(const Sphere &mesh) const {
+    return vertex.st;
+}
+
 ShadingInfo compute_shading_info_op::operator()(const Sphere &sphere) const {
     // To compute the shading frame, we use the geometry normal as normal,
     // and dpdu as one of the tangent vector. 
