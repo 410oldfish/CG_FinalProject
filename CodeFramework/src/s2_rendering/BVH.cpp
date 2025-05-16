@@ -44,11 +44,11 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
 {
     BVHBuildNode *node = new BVHBuildNode();
 
-    if(TASK_N<=1) { // we are not using BVH in task 1
-        // not building an actual BVH tree, just register the objects
-        node->registerObjects(objects);
-        return node; // our tree will just have one node
-    }
+    // if(TASK_N<=1) { // we are not using BVH in task 1
+    //     // not building an actual BVH tree, just register the objects
+    //     node->registerObjects(objects);
+    //     return node; // our tree will just have one node
+    // }
 
 
     // TODO: task 2 BVH algorithm starts here
@@ -137,20 +137,20 @@ Intersection BVHAccel::Intersect(const Ray& ray) const
 // Complexity: O(log(n)) for balanced trees, O(n) for unbalanced trees
 Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 {
-    if(TASK_N<=1) {  // we are not using BVH in task 1
-        // loop through all objects saved earlier
-        std::vector<Object *> objects = node->getRegisteredObjects();
-        Intersection first_isect;
-        for (int i = 0; i < objects.size(); i++) {
-            // Try to get an intersection point between the ray and the object
-            Intersection isect = objects[i]->getIntersection(ray);
-            // If the intersection happened, check if it is the first one or if it is the closest one
-            if (isect.happened && (!first_isect.happened || (first_isect.tnear > isect.tnear))) {
-                first_isect = isect; // update the first intersection
-            }
-        }
-        return first_isect;
-    }
+    // if(TASK_N<=1) {  // we are not using BVH in task 1
+    //     // loop through all objects saved earlier
+    //     std::vector<Object *> objects = node->getRegisteredObjects();
+    //     Intersection first_isect;
+    //     for (int i = 0; i < objects.size(); i++) {
+    //         // Try to get an intersection point between the ray and the object
+    //         Intersection isect = objects[i]->getIntersection(ray);
+    //         // If the intersection happened, check if it is the first one or if it is the closest one
+    //         if (isect.happened && (!first_isect.happened || (first_isect.tnear > isect.tnear))) {
+    //             first_isect = isect; // update the first intersection
+    //         }
+    //     }
+    //     return first_isect;
+    // }
 
     // TODO: task 2 BVH algorithm starts here
     Intersection inter;

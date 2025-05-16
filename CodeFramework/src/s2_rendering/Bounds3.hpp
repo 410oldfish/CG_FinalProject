@@ -14,7 +14,7 @@
 #include "Vector.hpp"
 #include <limits>
 #include <array>
-#include<float.h>
+#include <float.h>
 
 class Bounds3
 {

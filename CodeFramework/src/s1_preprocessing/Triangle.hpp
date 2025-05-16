@@ -67,7 +67,8 @@ public:
     // Uniformly sample a point on the triangle surface using barycentric coordinates
     // @ param pos (output) is the intersection point on the triangle surface
     // @ param pdf (output) is the probability density function of the sample
-    void Sample(Intersection &pos, float &pdf){
+    // mark override
+    void Sample(Intersection &pos, float &pdf) override{
         float x = std::sqrt(get_random_float()), y = get_random_float();
         pos.coords = v0 * (1.0f - x) + v1 * (x * (1.0f - y)) + v2 * (x * y);
         pos.normal = this->normal;
@@ -75,12 +76,13 @@ public:
     }
 
     // Return the precomputed area of the triangle
-    float getArea(){
+
+    float getArea() override {
         return area;
     }
 
     // Check if the triangle has an emission property
-    bool hasEmit(){
+    bool hasEmit() override {
         return m->hasEmission();
     }
 };

@@ -2,16 +2,11 @@
 #include "Scene.hpp"
 #include "Triangle.hpp"
 #include "Sphere.hpp"
-#include "Cylinder.hpp"
+// #include "Cylinder.hpp"
 #include "Vector.hpp"
 #include "global.hpp"
 #include <chrono>
 
-// Acknowledge: GitHub copilot has been used to help write comments for some files to help 
-// improve code readability before implementing the any tasks.
-// Comments for the function recursiveBuild() and getIntersection() are written on my own.
-
-int TASK_N=5;  // 1, 2, 3, 4, 5
 
 // In the main function of the program, we create the scene (create objects and
 // lights) as well as set the options for the render (image width and height,
@@ -19,19 +14,23 @@ int TASK_N=5;  // 1, 2, 3, 4, 5
 // function().
 int main(int argc, char** argv)
 {
-    if (argc>=2)
-        TASK_N=(int)atoi(argv[1]);
-    // change the resolution for quick debugging if rendering is slow
-    // Scene scene(64, 64);
-    // Scene scene(256, 256); // use this resolution for final rendering
-    // Scene scene(512, 512);
-    Scene scene(1024, 1024);
+    Scene scene(256, 256);
 
-    if(TASK_N>=4)
-        scene.spp = 128; // number of samples per pixel
-    else
-        scene.spp = 1;
+    if (argc>=2){
+        scene.width = (int)atoi(argv[1]);
+        scene.height = (int)atoi(argv[1]);
+    }
+    else{
+        scene.width = 256;
+        scene.height = 256;
+    }
 
+    if (argc>=3){
+        scene.spp = (int)atoi(argv[1]);
+    }
+    else{
+        scene.spp = 32;
+    }
     
     // Diffuse Materials
     Material* pink = new Material(DIFFUSE, Vector3f(0.72f, 0.48f, 0.56f));
@@ -52,7 +51,7 @@ int main(int argc, char** argv)
     Material* white = new Material(DIFFUSE, Vector3f(0.48f, 0.45f, 0.4f));
     white->Kd = 0.8f; // diffuse reflection coefficient
     white->Ks = 0.2f; // specular reflection coefficient
-    white->ior = 100.f; // refractive index
+    white->ior = 5.f; // refractive index
 
     // Material* light_yellowish_green = new Material(DIFFUSE, Vector3f(0.6, 0.6, 0.3));
     Material* red = new Material(DIFFUSE, Vector3f(0.8f, 0.2f, 0.0f));

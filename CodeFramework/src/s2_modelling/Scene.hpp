@@ -8,7 +8,7 @@
 #include "Vector.hpp"
 #include "Object.hpp"
 #include "PointLight.hpp"
-#include "AreaLight.hpp"
+// #include "AreaLight.hpp"
 #include "BVH.hpp"
 #include "Ray.hpp"
 
@@ -90,10 +90,11 @@ public:
     // @param index: Likely a placeholder, unused here unless used internally for object indexing
     // @param dir: Direction from hit point to camera (view vector), used for specular reflection calculation
     // @param specularExponent: Sharpness of specular reflection (Phong model, higher = shinier)
-    std::tuple<Vector3f, Vector3f> HandleAreaLight(const AreaLight &light, const Vector3f &hitPoint, const Vector3f &N,
-                                                   const Vector3f &shadowPointOrig,
-                                                   const std::vector<Object *> &objects, uint32_t &index,
-                                                   const Vector3f &dir, float specularExponent);
+    
+    // std::tuple<Vector3f, Vector3f> HandleAreaLight(const AreaLight &light, const Vector3f &hitPoint, const Vector3f &N,
+    //                                                const Vector3f &shadowPointOrig,
+    //                                                const std::vector<Object *> &objects, uint32_t &index,
+    //                                                const Vector3f &dir, float specularExponent);
 
 
     // Fields Definition (Part 3)

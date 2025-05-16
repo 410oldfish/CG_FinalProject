@@ -2,14 +2,24 @@
 // Created by goksu on 2/25/20.
 //
 
+#include <chrono>   // for system_clock
+#include <ctime>    // for std::time_t, std::localtime, std::tm
+#include <iomanip>  // for std::put_time
+
+
 #include <fstream>
 #include <sstream>
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "Material.hpp"
+
 #ifdef _OPENMP
     #include <omp.h>
 #endif
+
+// #ifndef SOURCE_DIR
+//     #define SOURCE_DIR "."  // fallback (for editor, optional)
+// #endif
 
 // @param deg: angle in degrees
 // @return: angle in radians
@@ -143,7 +153,17 @@ void Renderer::Render(const Scene& scene)
 
     // Create a filename like "binary_task1.ppm"
     std::stringstream ss;
-    ss << "binary_task" << TASK_N<<".ppm";
+    
+    // Get current time
+    auto now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::tm tm = *std::localtime(&t);
+
+    // Use absolute path to outputs/
+    ss << "binary_task_"
+        << std::put_time(&tm, "%Y%m%d_%H%M%S")
+        << ".ppm";
+
     std::string str = ss.str();
     const char* file_name = str.c_str();
 
