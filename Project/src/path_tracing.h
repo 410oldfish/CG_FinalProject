@@ -36,6 +36,7 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
     if (depth == 0 && is_light(scene.shapes[intersect_point.shape_id])) {
         radiance += current_path_throughput *
             emission(intersect_point, -ray.dir, scene);
+        return radiance;
     }
 
     const Material &mat = scene.materials[intersect_point.material_id];
@@ -151,10 +152,12 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
 
         pdf_indirect *= G;
         auto ao = get_ao_value(mat, intersect_point, scene.texture_pool);
+        bool touch_light = false;
         //If sample ray intersect with sth
         if (bsdf_intersect_point) {
             //if sample ray intersect with light
             if (is_light(scene.shapes[bsdf_intersect_point->shape_id])) {
+                touch_light = true;
                 // G & f are already computed.
                 Spectrum emittion_indirect_light = emission(*bsdf_intersect_point, -dir_bsdf, scene);
                 Spectrum radiance_indirect = G * brdf_indirect * emittion_indirect_light;
@@ -172,6 +175,7 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
                 radiance += current_path_throughput * radiance_indirect * MIS_weight_indirect;
             }
         } else if (!bsdf_intersect_point && has_envmap(scene)) {
+            touch_light = true;
             // G & f are already computed.
             const Light &light = get_envmap(scene);
             Spectrum L = emission(light,
@@ -208,8 +212,10 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
             }
         }
 
-        current_path_throughput = current_path_throughput * (G * brdf_indirect) * ao / (pdf_indirect * rr_prob);
-        radiance += path_tracing(scene, rng, bsdf_ray, ray_diff, eta_scale, current_path_throughput, depth + 1);
+        if (!touch_light) {
+            current_path_throughput = current_path_throughput * (G * brdf_indirect) * ao / (pdf_indirect * rr_prob);
+            radiance += path_tracing(scene, rng, bsdf_ray, ray_diff, eta_scale, current_path_throughput, depth + 1);
+        }
     }
 
     return radiance;
