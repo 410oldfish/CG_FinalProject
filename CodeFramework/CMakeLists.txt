@@ -25,15 +25,15 @@ set(SRC_FILES
     src/s2_modelling/PointLight.hpp
     src/s2_modelling/Scene.cpp
     src/s2_modelling/Scene.hpp
-
+    
     # s2_rendering
-    src/s2_rendering/Bounds3.hpp
-    src/s2_rendering/BVH.cpp
-    src/s2_rendering/BVH.hpp
-    src/s2_rendering/Intersection.hpp
-    src/s2_rendering/Ray.hpp
-    src/s2_rendering/Renderer.cpp
-    src/s2_rendering/Renderer.hpp
+    src/s3_rendering/Bounds3.hpp
+    src/s3_rendering/BVH.cpp
+    src/s3_rendering/BVH.hpp
+    src/s3_rendering/Intersection.hpp
+    src/s3_rendering/Ray.hpp
+    src/s3_rendering/Renderer.cpp
+    src/s3_rendering/Renderer.hpp
 
     # utilities
     src/utilities/global.hpp
@@ -48,8 +48,8 @@ add_executable(cgfinal ${SRC_FILES})
 target_include_directories(cgfinal PUBLIC
     ${PROJECT_SOURCE_DIR}/src/s1_preprocessing
     ${PROJECT_SOURCE_DIR}/src/s2_modelling
-    ${PROJECT_SOURCE_DIR}/src/s2_rendering
-    ${PROJECT_SOURCE_DIR}/src/s3_postprocessing
+    ${PROJECT_SOURCE_DIR}/src/s3_rendering
+    ${PROJECT_SOURCE_DIR}/src/s4_postprocessing
     ${PROJECT_SOURCE_DIR}/src/utilities
 )
 

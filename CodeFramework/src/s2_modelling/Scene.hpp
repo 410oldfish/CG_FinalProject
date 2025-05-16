@@ -32,7 +32,14 @@ public:
 
     // Add an object to the scene
     // @param object: pointer to the object to be added
-    void Add(Object *object) { objects.push_back(object); }
+    // void Add(Object *object) { objects.push_back(object); }
+    void Add(std::unique_ptr<Object> object) {
+    if (object->hasEmit()) {
+        light_sources.push_back(object.get());
+    }
+    objects.push_back(std::move(object));
+}
+
 
     // Add a light to the scene
     // @param light: pointer to the light to be added
@@ -40,7 +47,8 @@ public:
 
     // Get a list of all object pointers in the scene
     // @return: vector of pointers to objects in the scene
-    const std::vector<Object*>& get_objects() const { return objects; }
+    // const std::vector<Object*>& get_objects() const { return objects; }
+    const std::vector<std::unique_ptr<Object> >& get_objects() const { return objects; }
 
     // Get a list of all light pointers in the scene
     // @return: vector of pointers to lights in the scene
@@ -52,7 +60,8 @@ public:
     Intersection intersect(const Ray& ray) const;
 
     // Fields Definition (Part 2)
-    BVHAccel *bvh; // pointer to the BVH object of the scene
+    // BVHAccel *bvh; // pointer to the BVH object of the scene
+    std::unique_ptr<BVHAccel> bvh; // unique pointer to the BVH object of the scene
     
     // Build the BVH for the scene, call once at the beginning
     void buildBVH();
@@ -98,7 +107,11 @@ public:
 
 
     // Fields Definition (Part 3)
-    std::vector<Object* > objects; // vector of pointers to objects in the scene
+    // unique pointer
+    std::vector<std::unique_ptr<Object>> objects; // vector of pointers to objects in the scene
+
+    std::vector<Object*> light_sources; // they are the objects copied from the objects vector
+
     std::vector<std::unique_ptr<PointLight> > lights; // vector of pointers to lights in the scene
 
 

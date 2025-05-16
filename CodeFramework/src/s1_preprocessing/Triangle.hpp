@@ -21,12 +21,12 @@ public:
     Vector2f t0, t1, t2; // texture coords
     Vector3f normal;
     float area;
-    Material* m;
+    std::shared_ptr<Material> m;
 
     // Constructor. Precompute the normal and area of the triangle
     // @ param _v0, _v1, _v2 are the vertices of the triangle
     // @ param _m is the material of the triangle
-    Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, Material* _m = nullptr)
+    Triangle(Vector3f _v0, Vector3f _v1, Vector3f _v2, std::shared_ptr<Material> _m = std::make_shared<Material>(Material()))
         : v0(_v0), v1(_v1), v2(_v2), m(_m)
     {
         e1 = v1 - v0;
@@ -98,7 +98,8 @@ public:
     // @ param numTris is the number of triangles
     // @ param st is the array of texture coordinates (1 for each vertex)
     // @ param mt is the material of the mesh
-    MeshTriangle(const Vector3f* verts, const uint32_t* vertsIndex, const uint32_t& numTris, const Vector2f* st, Material *mt = new Material())
+    MeshTriangle(const Vector3f* verts, const uint32_t* vertsIndex, const uint32_t& numTris, 
+        const Vector2f* st, std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
     {   
         // Loop through vertsIndex to find out the number of vertices - 1, i.e., the max vertex index
         uint32_t maxIndex = 0;
@@ -141,8 +142,12 @@ public:
                                     std::max(max_vert.z, vert.z));
             }
             // Create a new triangle object and add it to the triangles vector
-            Triangle* tri = new Triangle(face_vertices[0], face_vertices[1],
-                                        face_vertices[2], mt);
+            // Triangle* tri = new Triangle(face_vertices[0], face_vertices[1],
+            //                             face_vertices[2], mt);
+            // Triangle* tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
+            //                        face_vertices[2], mt).release();
+            std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
+                                   face_vertices[2], mt);
 
             // Set the precomputed texture coordinates for each vertex of the triangle
             tri->t0=st[vertsIndex[i*3]];
@@ -150,7 +155,8 @@ public:
             tri->t2=st[vertsIndex[i*3+2]];
             
             // Store this triangle into the triangle list of the current mesh
-            triangles.push_back(*tri);
+            // triangles.push_back
+            triangles.push_back(std::move(tri));
 
 //            triangles.emplace_back(face_vertices[0], face_vertices[1],
 //                                   face_vertices[2], mt);
@@ -160,13 +166,13 @@ public:
         bounding_box = Bounds3(min_vert, max_vert);
 
         // Put all triangle pointers into a vector
-        std::vector<Object*> ptrs;
+        std::vector<std::unique_ptr<Object>> ptrs;
         for (auto& tri : triangles){
-            ptrs.push_back(&tri);
-            area += tri.area;
+            area += tri->area;
+            ptrs.push_back(std::move(tri));
         }
         // Create a BVH tree from the triangle pointers
-        bvh = new BVHAccel(ptrs);
+        bvh = std::make_unique<BVHAccel>(std::move(ptrs));
     }
 
 
@@ -174,7 +180,8 @@ public:
     // @ param filename is the name of the OBJ file
     // @ param offset is the offset to be added to each vertex position
     // @ param mt is the material of the mesh
-    MeshTriangle(const std::string& filename, Vector3f offset, Material *mt = new Material())
+    MeshTriangle(const std::string& filename, Vector3f offset, 
+                 std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
     {   
         // Load the OBJ file using the objl::Loader class
         objl::Loader loader;
@@ -225,21 +232,26 @@ public:
 
             // Create a new triangle object and add it to the triangles vector
             // Use of emplace_back to avoid unnecessary copies
-            triangles.emplace_back(face_vertices[0], face_vertices[1],
+            // triangles.emplace_back(face_vertices[0], face_vertices[1],
+            //                        face_vertices[2], mt);
+            std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
                                    face_vertices[2], mt);
+
+            triangles.push_back(std::move(tri));
         }
 
         // Finalise the mesh bounding box
         bounding_box = Bounds3(min_vert, max_vert);
 
         // Put all triangle pointers into a vector
-        std::vector<Object*> ptrs;
+        std::vector<std::unique_ptr<Object>> ptrs;
         for (auto& tri : triangles){
-            ptrs.push_back(&tri);
-            area += tri.area;
+            area += tri->area;
+            ptrs.push_back(std::move(tri));
         }
+
         // Create a BVH tree from the triangle pointers
-        bvh = new BVHAccel(ptrs);
+        bvh = std::make_unique<BVHAccel>(std::move(ptrs));
     }
 
     // Return the mesh's overall bounding box
@@ -366,12 +378,13 @@ public:
     uint32_t numTriangles; // number of triangles in the mesh
     std::unique_ptr<uint32_t[]> vertexIndex; // dynamic array of vertex indices (3 indices per triangle)
     std::unique_ptr<Vector2f[]> stCoordinates; // dynamic array of texture coordinates (1 per vertex)
-    std::vector<Triangle> triangles; // all triangles in the mesh
+    std::vector<std::unique_ptr<Triangle>> triangles; // vector of triangle objects
 
-    BVHAccel* bvh; // BVH tree for fast intersection testing
+    // BVHAccel* bvh; // BVH tree for fast intersection testing
+    std::unique_ptr<BVHAccel> bvh; // BVH tree for fast intersection testing
     float area; // surface area of the mesh, used for sampling
 
-    Material* m; // material of the mesh
+    std::shared_ptr<Material> m; // material of the mesh
 };
 
 

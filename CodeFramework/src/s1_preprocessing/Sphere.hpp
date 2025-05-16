@@ -17,11 +17,12 @@ class Sphere : public Object{
 public:
     Vector3f center;
     float radius, radius2; // radius and radius squared
-    Material *m;
+    std::shared_ptr<Material> m;
     float area;
 
     // Given a centre, radius, and material, create a sphere
-    Sphere(const Vector3f &c, const float &r, Material* mt = new Material()) : center(c), radius(r), radius2(r * r), m(mt), area(4 * M_PI *r *r) {}
+    Sphere(const Vector3f &c, const float &r, std::shared_ptr<Material> mt = std::make_shared<Material>(Material())) : 
+        center(c), radius(r), radius2(r * r), m(mt), area(4 * M_PI *r *r) {}
     
     // Return the intersection information of a ray with the sphere
     Intersection getIntersection(Ray ray){

@@ -40,13 +40,18 @@ public:
     // maxPrimsInNode: maximum number of primitives in a node
     // splitMethod: method to split the primitives
     // @output: build the BVH tree and stores the root in root
-    BVHAccel(std::vector<Object*> p, int maxPrimsInNode = 1, SplitMethod splitMethod = SplitMethod::NAIVE);
+    // BVHAccel(std::vector<Object*> p, int maxPrimsInNode = 1, SplitMethod splitMethod = SplitMethod::NAIVE);
+    // Shared pointer to the primitives
+    BVHAccel(std::vector<std::unique_ptr<Object>> p,
+             int maxPrimsInNode = 1,
+             SplitMethod splitMethod = SplitMethod::NAIVE);
+
 
     // Probability defined elsewhere, it should return the bounding box of the whole scene
     Bounds3 WorldBound() const;
 
     // Destructor
-    ~BVHAccel();
+    ~BVHAccel() = default;
 
     // @param ray: ray to be tested
     // @return: the closest intersection where the ray hits an object or empty.
@@ -59,22 +64,26 @@ public:
     bool IntersectP(const Ray &ray) const;
 
     // Pointer to the root of the BVH tree
-    BVHBuildNode* root;
+    // BVHBuildNode* root;
+    std::unique_ptr<BVHBuildNode> root; // unique pointer to the root of the BVH tree
 
     // @param: objects: vector of pointers to objects
     // @param: dim: dimension to split along, rotating between x/y/z
     // @return: pointer to the root of the BVH tree
-    BVHBuildNode* recursiveBuild(std::vector<Object*>objects, int dim);
+    // BVHBuildNode* recursiveBuild(std::vector<std::unique_ptr<Object>> objects, int dim);
+    std::unique_ptr<BVHBuildNode> recursiveBuild(std::vector<std::unique_ptr<Object>> objects, int dim);
 
     // BVHAccel Private Data
     const int maxPrimsInNode; // max objects allowed in a leaf node
     const SplitMethod splitMethod; // how to divide objects during building
-    std::vector<Object*> primitives; // stores all input scene objects
+    // std::vector<Object*> primitives; // stores all input scene objects
+    std::vector<std::unique_ptr<Object>> primitives; // stores all input scene objects
 
     // What does these functions do?
 
 
-    void getSample(BVHBuildNode* node, float p, Intersection &pos, float &pdf);
+    // void getSample(BVHBuildNode* node, float p, Intersection &pos, float &pdf);
+    void getSample(std::unique_ptr<BVHBuildNode>& node, float p, Intersection &pos, float &pdf);
 
     void Sample(Intersection &pos, float &pdf);
 };
@@ -82,9 +91,10 @@ public:
 
 struct BVHBuildNode {
     Bounds3 bounds;
-    BVHBuildNode *left;
-    BVHBuildNode *right;
-    Object* object; // the object if this is a leaf node
+    std::unique_ptr<BVHBuildNode> left; // left child
+    std::unique_ptr<BVHBuildNode> right; // right child
+    // Object* object; // the object if this is a leaf node
+    std::unique_ptr<Object> object; // the object if this is a leaf node
     float area; // area of all objects in this node
     std::vector<Object*> registered_objects; // only used in task 1, to store the objects in this node
 

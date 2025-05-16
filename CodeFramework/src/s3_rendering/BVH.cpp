@@ -5,7 +5,7 @@
 
 // BVHAccel means Bounding Volume Hierarchy Accelerator
 // Constructor for BVHAccel
-BVHAccel::BVHAccel(std::vector<Object*> p, 
+BVHAccel::BVHAccel(std::vector<std::unique_ptr<Object>> p,
                         int maxPrimsInNode,
                    SplitMethod splitMethod)
     : maxPrimsInNode(std::min(255, maxPrimsInNode)), // input is clamped to 255
@@ -21,7 +21,7 @@ BVHAccel::BVHAccel(std::vector<Object*> p,
         return;
 
     // Call the helper and get the root node assigned
-    root = recursiveBuild(primitives, 0);
+    root = recursiveBuild(std::move(primitives), 0);
 
     // Record the time
     time(&stop);
@@ -40,9 +40,14 @@ BVHAccel::BVHAccel(std::vector<Object*> p,
 // @param: objects: vector of pointers to objects
 // @param: dim: dimension to split along, rotating between x/y/z
 // @return: pointer to the root of the BVH tree
-BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
+// BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
+// BVHBuildNode* BVHAccel::recursiveBuild(std::vector<std::unique_ptr<Object>> objects, int dim)
+std::unique_ptr<BVHBuildNode> BVHAccel::recursiveBuild(std::vector<std::unique_ptr<Object>> objects, int dim)
+
+    // Create a new BVHBuildNode
 {
-    BVHBuildNode *node = new BVHBuildNode();
+
+    std::unique_ptr<BVHBuildNode> node = std::make_unique<BVHBuildNode>();
 
     // if(TASK_N<=1) { // we are not using BVH in task 1
     //     // not building an actual BVH tree, just register the objects
@@ -61,10 +66,10 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
     // Construct a left node if only one object is present
     if (objects.size() == 1) {
         node->bounds = objects[0]->getBounds();
-        node->object = objects[0];
+        node->area = objects[0]->getArea();
+        node->object = std::move(objects[0]); // move the object to the node
         node->left = nullptr;
         node->right = nullptr;
-        node->area = objects[0]->getArea();
         return node;
     }
 
@@ -72,8 +77,13 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
     // Set area and bounds
     // This is a non-leaf node
     else if (objects.size() == 2) {
-        node->left = recursiveBuild(std::vector{objects[0]}, dim);
-        node->right = recursiveBuild(std::vector{objects[1]}, dim);
+        std::vector<std::unique_ptr<Object>> leftshapes;
+        std::vector<std::unique_ptr<Object>> rightshapes;
+        leftshapes.push_back(std::move(objects[0]));
+        rightshapes.push_back(std::move(objects[1]));
+
+        node->left = recursiveBuild(std::move(leftshapes), dim);
+        node->right = recursiveBuild(std::move(rightshapes), dim);
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
         node->area = node->left->area + node->right->area;
@@ -84,19 +94,19 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
         Bounds3 centroidBounds;
         switch (dim%3) {
             case 0:
-                std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
+                std::sort(objects.begin(), objects.end(), [](const std::unique_ptr<Object>& f1, const std::unique_ptr<Object>& f2) {
                     return f1->getBounds().Centroid().x <
                            f2->getBounds().Centroid().x;
                 });
                 break;
             case 1:
-                std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
+                std::sort(objects.begin(), objects.end(), [](const std::unique_ptr<Object>& f1, const std::unique_ptr<Object>& f2) {
                     return f1->getBounds().Centroid().y <
                            f2->getBounds().Centroid().y;
                 });
                 break;
             case 2:
-                std::sort(objects.begin(), objects.end(), [](auto f1, auto f2) {
+                std::sort(objects.begin(), objects.end(), [](const std::unique_ptr<Object>& f1, const std::unique_ptr<Object>& f2) {
                     return f1->getBounds().Centroid().z <
                            f2->getBounds().Centroid().z;
                 });
@@ -108,18 +118,32 @@ BVHBuildNode* BVHAccel::recursiveBuild(std::vector<Object*> objects, int dim)
         auto middling = objects.begin() + (objects.size() / 2); // move the iterator forward by half
         auto ending = objects.end();
 
-        auto leftshapes = std::vector<Object*>(beginning, middling);
-        auto rightshapes = std::vector<Object*>(middling, ending);
+        // auto leftshapes = std::vector<Object*>(beginning, middling);
+        // auto rightshapes = std::vector<Object*>(middling, ending);
+
+        std::vector<std::unique_ptr<Object>> leftshapes;
+        std::vector<std::unique_ptr<Object>> rightshapes;
+
+        leftshapes.reserve(objects.size() / 2);  // avoid reallocations
+        rightshapes.reserve(objects.size() - objects.size() / 2);
+
+        // Move left half
+        for (auto it = objects.begin(); it < middling; ++it)
+            leftshapes.push_back(std::move(*it));
+
+        // Move right half
+        for (auto it = middling; it < objects.end(); ++it)
+            rightshapes.push_back(std::move(*it));
+
 
         assert(objects.size() == (leftshapes.size() + rightshapes.size()));
 
-        node->left = recursiveBuild(leftshapes, dim+1);
-        node->right = recursiveBuild(rightshapes, dim+1);
+        node->left = recursiveBuild(std::move(leftshapes), dim+1);
+        node->right = recursiveBuild(std::move(rightshapes), dim+1);
 
         node->bounds = Union(node->left->bounds, node->right->bounds);
         node->area = node->left->area + node->right->area;
     }
-
     return node;
 }
 
@@ -130,7 +154,7 @@ Intersection BVHAccel::Intersect(const Ray& ray) const
     Intersection isect;
     if (!root) // You must have a root node first
         return isect;
-    isect = BVHAccel::getIntersection(root, ray); // recursively traverse the function from the root node.
+    isect = BVHAccel::getIntersection(root.get(), ray); // recursively traverse the function from the root node.
     return isect;
 }
 
@@ -177,12 +201,14 @@ Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
     }
 
     // Compute the intersection points of the left and right children
-    Intersection left=getIntersection(node->left, ray);
-    Intersection right=getIntersection(node->right, ray);
+    Intersection left=getIntersection(node->left.get(), ray);
+    Intersection right=getIntersection(node->right.get(), ray);
 
     // Return the closest intersection point
     return left.tnear < right.tnear ? left : right;
 }
+
+
 
 
 // Randomly sample a point on an emissive object in the scene, proportional to surface area.
@@ -195,7 +221,8 @@ Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 // @param p: a random number between 0 and surface area of the object
 // @param pos (output): the sampled position on a light's surface
 // @param pdf (output): unnormalised PDF
-void BVHAccel::getSample(BVHBuildNode* node, float p, Intersection &pos, float &pdf){
+// void BVHAccel::getSample(BVHBuildNode* node, float p, Intersection &pos, float &pdf){
+void BVHAccel::getSample(std::unique_ptr<BVHBuildNode>& node, float p, Intersection &pos, float &pdf){
 
     // If the node is a leaf, sample directly on the object and return
     if(node->left == nullptr || node->right == nullptr){

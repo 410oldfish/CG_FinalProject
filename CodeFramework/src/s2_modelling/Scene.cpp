@@ -12,7 +12,8 @@ void Scene::buildBVH() {
     // Create a BVH object using the objects in the scene
     // Using NAIVE split method for simplicity
     // Set maxPrimsInNode to 1 for simplicity, although the actual maxPrimsInNode is fixed to 2.
-    this->bvh = new BVHAccel(objects, 1, BVHAccel::SplitMethod::NAIVE);
+    // this->bvh = new BVHAccel(std::move(this->objects), 1, BVHAccel::SplitMethod::NAIVE);
+    this->bvh = std::make_unique<BVHAccel>(std::move(this->objects), 1, BVHAccel::SplitMethod::NAIVE);
 }
 
 // Compute ray-scene intersection using the BVH
@@ -29,10 +30,10 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const
 {   
     // Compute the total surface area of all emissive objects
     float emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()){
+    for (uint32_t k = 0; k < light_sources.size(); ++k) {
+        if (light_sources[k]->hasEmit()){
             pos.happened=true;  // area light that has emission exists
-            emit_area_sum += objects[k]->getArea();
+            emit_area_sum += light_sources[k]->getArea();
         }
     }
 
@@ -41,12 +42,12 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const
 
     // Fine the object that corresponds to the random number
     emit_area_sum = 0;
-    for (uint32_t k = 0; k < objects.size(); ++k) {
-        if (objects[k]->hasEmit()){
-            emit_area_sum += objects[k]->getArea();
+    for (uint32_t k = 0; k < light_sources.size(); ++k) {
+        if (light_sources[k]->hasEmit()){
+            emit_area_sum += light_sources[k]->getArea();
             if (p <= emit_area_sum){
-                objects[k]->Sample(pos, pdf);
-                pdf = pdf * (objects[k]->getArea() / emit_area_sum); // pdf is the pdf of a single light source
+                light_sources[k]->Sample(pos, pdf);
+                pdf = pdf * (light_sources[k]->getArea() / emit_area_sum); // pdf is the pdf of a single light source
                 break;
             }
         }
@@ -105,7 +106,8 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
     Vector3f point_hit_above = point_hit + normal_hit * EPSILON; // hit point above the surface
     Vector2f texture_hit = inter.tcoords; // Texture Barycentric coordinates at the hit point
     Object * object_hit = inter.obj; // Object that was hit
-    Material * material_hit = inter.material; // Material of the object that was hit
+    // Material * material_hit = inter.material; // Material of the object that was hit
+    std::shared_ptr<Material> material_hit = inter.material; // Material of the object that was hit
     Vector3f dir_hit_to_view = -ray.direction.normalized(); // outgoing light direction from the hit point to the camera
     Vector3f dir_view_to_hit = ray.direction.normalized(); // direction from the camera to the hit point
     float kd = material_hit->Kd; // diffuse reflection coefficient
@@ -261,7 +263,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         std::cout << "ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
         pdf_dir_hit_to_source = SMALL_EPSILON;
     }
-
+    
     // 6. Recursively compute the radiance from a source point to the hit point
     point_hit_above = point_hit + normal_hit * EPSILON;
     Ray ray_hit_to_source(point_hit_above, dir_hit_to_source); // create a ray from the hit point to the light source
