@@ -203,18 +203,6 @@ public:
 
         // Initialse area to 0
         area = 0;
-
-        // Assigns the provided material
-        m = mt;
-
-        // Only one mesh is supported
-        assert(loader.LoadedMeshes.size() == 1);
-        // A Mesh has the following fields:
-        //   std::string MeshName;
-        //   std::vector<Vertex> Vertices;
-        //   std::vector<unsigned int> Indices;
-        //   std::optional<Material> MeshMaterial;
-        auto mesh = loader.LoadedMeshes[0];
         
         // Prepare a infinitely large bounding box
         Vector3f min_vert = Vector3f{std::numeric_limits<float>::infinity(),
@@ -223,47 +211,57 @@ public:
         Vector3f max_vert = Vector3f{-std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity()};
-        
-        // Loop over the vertices (3 vertices per triangle)
-        for (int i = 0; i < mesh.Vertices.size(); i += 3) {
-
-            // Extract the coordinates of the three vertices of the triangle
-            std::array<Vector3f, 3> face_vertices;
-            std::array<Vector2f, 3> rho_texture_coords;
-
-            for (int j = 0; j < 3; j++) {
-                auto vert = Vector3f(mesh.Vertices[i + j].Position.X+offset.x,
-                                     mesh.Vertices[i + j].Position.Y+offset.y,
-                                     mesh.Vertices[i + j].Position.Z+offset.z);
-                face_vertices[j] = vert;
-
-
-                auto rho_texture_coord = Vector2f(mesh.Vertices[i + j].TextureCoordinate.X,
-                                             mesh.Vertices[i + j].TextureCoordinate.Y);
-
-                rho_texture_coords[j] = rho_texture_coord;
-                
-                // Update the bounding box of the mesh
-                min_vert = Vector3f(std::min(min_vert.x, vert.x),
-                                    std::min(min_vert.y, vert.y),
-                                    std::min(min_vert.z, vert.z));
-                max_vert = Vector3f(std::max(max_vert.x, vert.x),
-                                    std::max(max_vert.y, vert.y),
-                                    std::max(max_vert.z, vert.z));
+        for (int i = 0; i < loader.LoadedMeshes.size(); i++){
+            auto mesh = loader.LoadedMeshes[i];
+            m = mt;
+            auto material_raw = mesh.MeshMaterial;
+            if (material_raw.has_value()){
+                m = new Material(DIFFUSE, Vector3f(material_raw->Ka.X, material_raw->Ka.Y, material_raw->Ka.Z));
+                m->Kd = 1 - std::sqrt(material_raw->Ns/1000.0f);
+                m->Ks = std::sqrt(material_raw->Ns/1000.0f);
+                m->ior = material_raw->Ni;
+                m->opaqueness = material_raw->d;
             }
+            
+            for (int i = 0; i < mesh.Vertices.size(); i += 3) {
+                // Extract the coordinates of the three vertices of the triangle
+                std::array<Vector3f, 3> face_vertices;
+                std::array<Vector2f, 3> rho_texture_coords;
 
-            // Create a new triangle object and add it to the triangles vector
-            // Use of emplace_back to avoid unnecessary copies
-            // triangles.emplace_back(face_vertices[0], face_vertices[1],
-            //                        face_vertices[2], mt);
-            std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
-                                   face_vertices[2], mt);
+                for (int j = 0; j < 3; j++) {
+                    auto vert = Vector3f(mesh.Vertices[i + j].Position.X+offset.x,
+                                        mesh.Vertices[i + j].Position.Y+offset.y,
+                                        mesh.Vertices[i + j].Position.Z+offset.z);
+                    face_vertices[j] = vert;
 
-            tri->v0_rho_texture_coords=rho_texture_coords[0];
-            tri->v1_rho_texture_coords=rho_texture_coords[1];
-            tri->v2_rho_texture_coords=rho_texture_coords[2];
 
-            triangles.push_back(std::move(tri));
+                    auto rho_texture_coord = Vector2f(mesh.Vertices[i + j].TextureCoordinate.X,
+                                                mesh.Vertices[i + j].TextureCoordinate.Y);
+
+                    rho_texture_coords[j] = rho_texture_coord;
+                    
+                    // Update the bounding box of the mesh
+                    min_vert = Vector3f(std::min(min_vert.x, vert.x),
+                                        std::min(min_vert.y, vert.y),
+                                        std::min(min_vert.z, vert.z));
+                    max_vert = Vector3f(std::max(max_vert.x, vert.x),
+                                        std::max(max_vert.y, vert.y),
+                                        std::max(max_vert.z, vert.z));
+                    }
+
+                // Create a new triangle object and add it to the triangles vector
+                // Use of emplace_back to avoid unnecessary copies
+                // triangles.emplace_back(face_vertices[0], face_vertices[1],
+                //                        face_vertices[2], mt);
+                std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
+                                    face_vertices[2], m);
+
+                tri->v0_rho_texture_coords=rho_texture_coords[0];
+                tri->v1_rho_texture_coords=rho_texture_coords[1];
+                tri->v2_rho_texture_coords=rho_texture_coords[2];
+                
+                triangles.push_back(std::move(tri));
+            }
         }
 
         // Finalise the mesh bounding box

@@ -115,9 +115,16 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     std::unique_ptr<MeshTriangle> floor = std::make_unique<MeshTriangle>("../models/cornellbox/floor.obj", Vector3f(0), white);
     std::unique_ptr<MeshTriangle> left = std::make_unique<MeshTriangle>("../models/cornellbox/left.obj", Vector3f(0), mirror);
     std::unique_ptr<MeshTriangle> right = std::make_unique<MeshTriangle>("../models/cornellbox/right.obj", Vector3f(0), blue);
-    std::unique_ptr<MeshTriangle> light_ = std::make_unique<MeshTriangle>("../models/cornellbox/light.obj", Vector3f(0, -5, 0), light); // light is translated downwards to be inside the box
+    std::unique_ptr<MeshTriangle> light_ = std::make_unique<MeshTriangle>("../models/cornellbox/light.obj", Vector3f(0, -5, 0), light);
+
+    // std::unique_ptr<MeshTriangle> glass_cup = std::make_unique<MeshTriangle>("../models/glass/glass_m.obj", Vector3f(0));
+    // scene.Add(std::move(glass_cup));
 
 
+    std::unique_ptr<MeshTriangle> window_wall = std::make_unique<MeshTriangle>("../models/window/wall.obj", Vector3f(275, 0, 500));
+    scene.Add(std::move(window_wall));
+    std::unique_ptr<MeshTriangle> window_body = std::make_unique<MeshTriangle>("../models/window/window2.obj", Vector3f(275, 0, 500));
+    scene.Add(std::move(window_body));
 
     // Add mesh objects to the scene
     // scene.Add(floor); // stack object, scene will not delete it, but main will
@@ -129,20 +136,19 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     scene.Add(std::move(right));
     scene.Add(std::move(light_));
 
-
     // ======= Additional objects =======
 
 
-    std::unique_ptr<MeshTriangle> shortBox = std::make_unique<MeshTriangle>("../models/cornellbox/shortbox.obj", Vector3f(0), frosted_glass);
-    scene.Add(std::move(shortBox));
+    // std::unique_ptr<MeshTriangle> shortBox = std::make_unique<MeshTriangle>("../models/cornellbox/shortbox.obj", Vector3f(0), frosted_glass);
+    // scene.Add(std::move(shortBox));
 
 
     std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow);
     scene.Add(std::move(bob));
 
 
-    scene.Add(std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass));
-    scene.Add(std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green));
+    // scene.Add(std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass));
+    // scene.Add(std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green));
 
     // Build the floor manually
     // Define the 4 vertices of a large rectangle floor plane, lower left corner at (0,0,0), 550x560
