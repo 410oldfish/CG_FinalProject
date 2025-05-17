@@ -48,7 +48,7 @@
 		<float name="clearcoatGloss" value="0.0"/>
 		<float name="eta" value="1"/>
 
-<!--		<ref name="normalmap" id="Canno_Normal"/>-->
+		<ref name="normalmap" id="Canno_Normal"/>
 		<ref name="aomap" id="Canno_AO"/>
 	</bsdf>
 
