@@ -9,7 +9,9 @@
 #include <cassert>
 #include <array>
 #include <cstring>
-
+// Eigen and OpenCV
+#include <Eigen/Eigen>
+#include <opencv2/opencv.hpp>
 
 // ========================= TRIANGLE CLASS ========================= //
 
@@ -19,9 +21,9 @@ public:
     // // std::shared_ptr<Material> m; // material of the mesh
     // Material* m; // material of the mesh
 
-    Vector2f v0_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p1 on the pho texture map
-    Vector2f v1_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p2 on the pho texture map
-    Vector2f v2_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p3 on the pho texture map
+    Vector2f v0_texture_coords; // the 2D coordinates used to get the pho (colour) value at p1 on the pho texture map
+    Vector2f v1_texture_coords; // the 2D coordinates used to get the pho (colour) value at p2 on the pho texture map
+    Vector2f v2_texture_coords; // the 2D coordinates used to get the pho (colour) value at p3 on the pho texture map
 
 
 
@@ -113,7 +115,7 @@ public:
     //     const Vector2f* st, std::shared_ptr<Material> mt = std::make_shared<Material>(Material()))
     // {   
     MeshTriangle(const Vector3f* verts, const uint32_t* vertsIndex, const uint32_t& numTris, 
-                 const Vector2f* st, Material* mt = new Material(Material()))
+                 const Vector2f* st, Material* default_material)
     {
         // Loop through vertsIndex to find out the number of vertices - 1, i.e., the max vertex index
         uint32_t maxIndex = 0;
@@ -126,7 +128,7 @@ public:
         memcpy(stCoordinates.get(), st, sizeof(Vector2f) * maxIndex);
 
         // Assign the material to the mesh, m is one of the fields of the Object class
-        m=mt;
+        m= default_material;
 
         // Intialise a infinitely large bounding box
         Vector3f min_vert = Vector3f{std::numeric_limits<float>::infinity(),
@@ -161,12 +163,12 @@ public:
             // Triangle* tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
             //                        face_vertices[2], mt).release();
             std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
-                                   face_vertices[2], mt);
+                                   face_vertices[2], default_material);
 
             // Set the precomputed texture coordinates for each vertex of the triangle
-            tri->v0_rho_texture_coords=st[vertsIndex[i*3]];
-            tri->v1_rho_texture_coords=st[vertsIndex[i*3+1]];
-            tri->v2_rho_texture_coords=st[vertsIndex[i*3+2]];
+            tri->v0_texture_coords=st[vertsIndex[i*3]];
+            tri->v1_texture_coords=st[vertsIndex[i*3+1]];
+            tri->v2_texture_coords=st[vertsIndex[i*3+2]];
             
             // Store this triangle into the triangle list of the current mesh
             // triangles.push_back
@@ -195,7 +197,7 @@ public:
     // @ param offset is the offset to be added to each vertex position
     // @ param mt is the material of the mesh
     MeshTriangle(const std::string& filename, Vector3f offset, 
-                    Material* mt = new Material(Material()))
+                    Material* default_material, std::vector<Material*>& loaded_materials)
     {   
         // Load the OBJ file using the objl::Loader class
         objl::Loader loader;
@@ -213,14 +215,47 @@ public:
                                      -std::numeric_limits<float>::infinity()};
         for (int i = 0; i < loader.LoadedMeshes.size(); i++){
             auto mesh = loader.LoadedMeshes[i];
-            m = mt;
+            m = default_material;
             auto material_raw = mesh.MeshMaterial;
             if (material_raw.has_value()){
                 m = new Material(DIFFUSE, Vector3f(material_raw->Ka.X, material_raw->Ka.Y, material_raw->Ka.Z));
-                m->Kd = 1 - std::sqrt(material_raw->Ns/1000.0f);
-                m->Ks = std::sqrt(material_raw->Ns/1000.0f);
-                m->ior = material_raw->Ni;
-                m->opaqueness = material_raw->d;
+                loaded_materials.push_back(m);
+
+
+                m->rho_map_implicit = [material_raw](Vector2f uv) {
+                    return Vector3f(material_raw->Kd.X, material_raw->Kd.Y, material_raw->Kd.Z);
+                };
+
+                m->kd_map_implicit = [material_raw](Vector2f uv) {
+                    return Vector3f(1.f - material_raw->Ks.X, 1.f - material_raw->Ks.Y, 1.f - material_raw->Ks.Z);
+                };
+
+                m->ks_map_implicit = [material_raw](Vector2f uv) {
+                    return Vector3f(material_raw->Ks.X, material_raw->Ks.Y, material_raw->Ks.Z);
+                };
+
+                m->ior_map_implicit = [material_raw](Vector2f uv) {
+                    return material_raw->Ni;
+                };
+
+                m->opaqueness_map_implicit = [material_raw](Vector2f uv) {
+                    return material_raw->d;
+                };
+
+                // If String is not empty, set the texture maps
+                if (!material_raw->map_Kd.empty()){
+                    m->rho_map = loadImageAsMatrix(material_raw->map_Kd);
+                }
+                if (!material_raw->map_Ks.empty()){
+                    m->ks_map = loadImageAsMatrix(material_raw->map_Ks);
+                    m->kd_map = m->ks_map.unaryExpr([](const Vector3f& ks) {
+                        return Vector3f(1.0f, 1.0f, 1.0f) - ks;
+                    });
+                }
+                if (!material_raw->map_d.empty()){
+                    m->opaqueness_map = loadImageAsMatrixBW(material_raw->map_d);
+                }
+
             }
             
             for (int i = 0; i < mesh.Vertices.size(); i += 3) {
@@ -256,9 +291,9 @@ public:
                 std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
                                     face_vertices[2], m);
 
-                tri->v0_rho_texture_coords=rho_texture_coords[0];
-                tri->v1_rho_texture_coords=rho_texture_coords[1];
-                tri->v2_rho_texture_coords=rho_texture_coords[2];
+                tri->v0_texture_coords=rho_texture_coords[0];
+                tri->v1_texture_coords=rho_texture_coords[1];
+                tri->v2_texture_coords=rho_texture_coords[2];
                 
                 triangles.push_back(std::move(tri));
             }
@@ -502,21 +537,18 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.normal = this->normal; // normal at the intersection point
     inter.material = this->m; // material of the triangle
     inter.obj = this; // object that was hit
-    inter.tcoords.x = b1; // barycentric coordinate u
-    inter.tcoords.y = b2; // barycentric coordinate v
+    // Texture coordinates
+    inter.tcoords = v0_texture_coords * (1 - b1 - b2) + v1_texture_coords * b1 + v2_texture_coords * b2; // interpolated texture coordinates
     return inter;
 }
 
 
 inline Vector3f Triangle::evalDiffuseColor(const Vector2f& barry_centric_coords) const
 {
-    if(m->rho_texture_map.empty())return m->getColor(); // if not textured, return color
-
-
     // Interpolate the texture coordinates using Barycentric coordinates
-    Vector2f v_rho_texture_coords = v0_rho_texture_coords * (1 - barry_centric_coords.x - barry_centric_coords.y) 
-                                + v1_rho_texture_coords * barry_centric_coords.x 
-                                + v2_rho_texture_coords * barry_centric_coords.y;
+    Vector2f v_rho_texture_coords = v0_texture_coords * (1 - barry_centric_coords.x - barry_centric_coords.y) 
+                                + v1_texture_coords * barry_centric_coords.x 
+                                + v2_texture_coords * barry_centric_coords.y;
 
     Vector3f rho_p = m->getRho(v_rho_texture_coords); // get the rho value at the interpolated texture coordinates
     return rho_p; // return the rho value

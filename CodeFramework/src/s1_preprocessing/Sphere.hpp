@@ -63,7 +63,7 @@ public:
 
     // Evaluate the diffuse color of the sphere at a given texture coordinate
     Vector3f evalDiffuseColor(const Vector2f &st)const {
-        return m->getColor();
+        return m->getRho(Vector2f(0, 0)); // return the diffuse color of the sphere
     }
 
     // getBounds function returns the bounding box of the sphere

@@ -9,5 +9,5 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.5
 d 1.000000
 illum 2
-map_Kd /Users/yuanhong/Desktop/ANU 2025 S1/COMP8610 Computer Graphics/Project/Model/window2/Window_C.jpg
-map_refl /Users/yuanhong/Desktop/ANU 2025 S1/COMP8610 Computer Graphics/Project/Window Component/textures/Unbenannt-1.jpg
+map_Kd ../models/window/Window_C.jpg
+# map_refl /Users/yuanhong/Desktop/ANU 2025 S1/COMP8610 Computer Graphics/Project/Window Component/textures/Unbenannt-1.jpg

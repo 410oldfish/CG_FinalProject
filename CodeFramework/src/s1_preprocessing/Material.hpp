@@ -12,7 +12,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <functional>
-;
+
 
 
 enum MaterialType {DIFFUSE, GLASS, EMIT, MIRROR};
@@ -145,9 +145,34 @@ private:
 
 
 public:
-    // !!!!!!!!!
-    cv::Mat rho_texture_map; // texture map
-    std::function<Vector3f(Vector2f)> rho_texture_map_implicit;
+
+    // ========== Only 5 Types of Properties are supported ==========
+
+    // Rho
+    std::function<Vector3f(Vector2f)> rho_map_implicit; // base colour
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> rho_map; // base colour
+
+    // kd
+    std::function<Vector3f(Vector2f)> kd_map_implicit; // diffuse reflection coefficient
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> kd_map; // diffuse reflection coefficient
+
+    // ks
+    std::function<Vector3f(Vector2f)> ks_map_implicit; // specular reflection coefficient
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> ks_map; // specular reflection coefficient
+
+    // ior
+    std::function<float(Vector2f)> ior_map_implicit; // refractive index
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> ior_map; // refractive index
+
+    // opaqueness
+    std::function<float(Vector2f)> opaqueness_map_implicit; // opaqueness
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> opaqueness_map; // opaqueness
+    
+
+
+
+
+
 
 
     MaterialType m_type; // either DIFFUSE, GLASS or EMIT
@@ -186,36 +211,135 @@ public:
 
 
 
-    Vector3f getRho(Vector2f rho_p_coords) const
+    inline Vector3f getRho(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (rho_texture_map_implicit)
+        if (rho_map.size() !=0)
         {
-            return rho_texture_map_implicit(rho_p_coords);
-        }
-        if (rho_texture_map.empty())
+            int width = rho_map.cols();
+            int height = rho_map.rows();
+
+            int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
+            int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
+
+            return rho_map(y, x);  // row = y, col = x
+
+        } else if (rho_map_implicit){
+
+            return rho_map_implicit(rho_p_coords);
+
+        } else
         {
-            return Vector3f(0, 0, 0);
-        }
-
-
-        int width = rho_texture_map.cols;
-        int height = rho_texture_map.rows;
-        auto u_img = rho_p_coords.x * width;
-        auto v_img = (1 - rho_p_coords.y) * height;
-
-        try
-        {
-            auto color = rho_texture_map.at<cv::Vec3b>(v_img, u_img);
-            return Vector3f(color[0]/255.0f, color[1]/255.0f, color[2]/255.0f);
-        }
-        catch(const std::exception& e)
-        {   
-            std::cerr << "Error: " << e.what() << std::endl;
-            std::cerr << "Colour Not Found" << std::endl;
+            // If no texture map or implicit function is defined, return black
+            std::cerr << "Error: No Explicit or Implicit Rho Map. Returning black." << std::endl;
             return Vector3f(0, 0, 0);
         }
     }
+
+    inline Vector3f getKd(Vector2f rho_p_coords) const
+    {
+        // If explicit function is defined, use it
+        if (kd_map.size() !=0)
+        {
+            int width = kd_map.cols();
+            int height = kd_map.rows();
+
+            int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
+            int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
+
+            return kd_map(y, x);  // row = y, col = x
+
+        } else if (kd_map_implicit){
+
+            return kd_map_implicit(rho_p_coords);
+
+        } else
+        {
+            // If no texture map or implicit function is defined, return black
+            std::cerr << "Error: No Explicit or Implicit Kd Map. Returning 0.8." << std::endl;
+            return Vector3f(0.8, 0.8, 0.8);
+        }
+    }
+
+    inline Vector3f getKs(Vector2f rho_p_coords) const
+    {
+        // If explicit function is defined, use it
+        if (ks_map.size() !=0)
+        {
+            int width = ks_map.cols();
+            int height = ks_map.rows();
+
+            int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
+            int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
+
+            return ks_map(y, x);  // row = y, col = x
+
+        } else if (ks_map_implicit){
+
+            return ks_map_implicit(rho_p_coords);
+
+        } else
+        {
+            // If no texture map or implicit function is defined, return black
+            std::cerr << "Error: No Explicit or Implicit Ks Map. Returning 0.2." << std::endl;
+            return Vector3f(0.2, 0.2, 0.2);
+        }
+    }
+
+    inline float getIor(Vector2f rho_p_coords) const
+    {
+        // If explicit function is defined, use it
+        if (ior_map.size() !=0)
+        {
+            int width = ior_map.cols();
+            int height = ior_map.rows();
+
+            int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
+            int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
+
+            return ior_map(y, x);  // row = y, col = x
+
+        } else if (ior_map_implicit){
+
+            return ior_map_implicit(rho_p_coords);
+
+        } else
+        {
+            // If no texture map or implicit function is defined, return black
+            std::cerr << "Error: No Explicit or Implicit Ior Map. Returning 1.5." << std::endl;
+            return 1.5;
+        }
+    }
+
+    inline float getOpaqueness(Vector2f rho_p_coords) const
+    {
+        // If explicit function is defined, use it
+        if (opaqueness_map.size() !=0)
+        {
+            int width = opaqueness_map.cols();
+            int height = opaqueness_map.rows();
+
+            int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
+            int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
+
+            return opaqueness_map(y, x);  // row = y, col = x
+
+        } else if (opaqueness_map_implicit){
+
+            return opaqueness_map_implicit(rho_p_coords);
+
+        } else
+        {
+            // If no texture map or implicit function is defined, return black
+            std::cerr << "Error: No Explicit or Implicit Opaqueness Map. Returning 1." << std::endl;
+            return 1;
+        }
+    }
+
+
+
+
+
 };
 
 

@@ -203,7 +203,8 @@ private:
         Vector3f &point_hit_above,
         Vector2f &texture_hit,
         Vector3f &dir_hit_to_view,
-        Vector3f &dir_view_to_hit
+        Vector3f &dir_view_to_hit,
+        Vector3f &rho
     ) const;
 
 };

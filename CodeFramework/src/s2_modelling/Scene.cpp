@@ -110,9 +110,18 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
     Material* material_hit = inter.material; // Material of the object that was hit
     Vector3f dir_hit_to_view = -ray.direction.normalized(); // outgoing light direction from the hit point to the camera
     Vector3f dir_view_to_hit = ray.direction.normalized(); // direction from the camera to the hit point
-    float kd = material_hit->Kd; // diffuse reflection coefficient
-    float ks = material_hit->Ks; // specular reflection coefficient
-    float opaqueness = material_hit->opaqueness;
+
+    // Five parameters of the material
+    Vector3f rho = material_hit->getRho(texture_hit); // diffuse color of the object
+    float kd = material_hit->getKd(texture_hit).norm(); // diffuse reflection coefficient
+    float ks = material_hit->getKs(texture_hit).norm(); // specular reflection coefficient
+    float ior = material_hit->getIor(texture_hit); // index of refraction
+    float opaqueness = material_hit->getOpaqueness(texture_hit); // opaqueness
+
+    
+    // float kd = material_hit->Kd; // diffuse reflection coefficient
+    // float ks = material_hit->Ks; // specular reflection coefficient
+    // float opaqueness = material_hit->opaqueness;
 
     // 4. Evaluate Direct Light [!! Return !!]
     if (inter.material->m_type == EMIT) {
@@ -165,7 +174,8 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
                 point_hit_above, 
                 texture_hit, 
                 dir_hit_to_view, 
-                dir_view_to_hit)
+                dir_view_to_hit,
+                rho)
                 / RussianRoulette; // * diffuse_weight * opaque_weight / diffuse_weight / opaque_weight (cancelled out!!!)
 
         
@@ -175,7 +185,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
 
 
             Vector3f I = dir_view_to_hit;
-            float kr = fresnel(I, normal_hit, material_hit->ior);
+            float kr = fresnel(I, normal_hit, ior);
             float reflect_weight = kr;
             float refract_weight = 1.0f - kr;
             Vector3f offset = normal_hit * EPSILON;
@@ -196,7 +206,8 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
                     point_hit_above, 
                     texture_hit, 
                     dir_hit_to_view, 
-                    dir_view_to_hit)
+                    dir_view_to_hit,
+                    rho)
                     / RussianRoulette; // * diffuse_weight * opaque_weight / diffuse_weight / opaque_weight (cancelled out!!!)
             }
 
@@ -204,7 +215,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
             // Vector3f R = reflect(dir_view_to_hit, normal_hit);
             // Ray reflected(point_hit_above, R);
             // Vector3f Li = castRay(reflected, depth + 1, has_evaluated_diffuse_previously); // it is possible that it hit the light the next recursion.
-            // Vector3f radiance_specular = Li * fresnel(dir_view_to_hit, normal_hit, material_hit->ior); // * specular_weight * opaque_weight
+            // Vector3f radiance_specular = Li * fresnel(dir_view_to_hit, normal_hit, ior); // * specular_weight * opaque_weight
             // radiance_specular = radiance_specular / RussianRoulette; // / specular_weight * opaque_weight (cancelled out!!!)
             // return radiance_specular;
 
@@ -217,7 +228,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         // ============================== [P2.2: REFLECT OR REFRACT ?] ==============================
 
         Vector3f I = dir_view_to_hit;
-        float kr = fresnel(I, normal_hit, material_hit->ior);
+        float kr = fresnel(I, normal_hit, ior);
         float reflect_weight = kr;
         float refract_weight = 1.0f - kr;
         Vector3f offset = normal_hit * EPSILON;
@@ -229,7 +240,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
             return radiance_reflect ;
 
         } else {
-            Vector3f Rr = refract(I, normal_hit, material_hit->ior);
+            Vector3f Rr = refract(I, normal_hit, ior);
             if (dotProduct(Rr, normal_hit) < 0)
                 offset = -offset; // we are in the glass and going out
             Ray ray_hit_to_source(point_hit + offset, Rr);
@@ -252,7 +263,8 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         Vector3f &point_hit_above,
         Vector2f &texture_hit,
         Vector3f &dir_hit_to_view,
-        Vector3f &dir_view_to_hit
+        Vector3f &dir_view_to_hit,
+        Vector3f &rho
     ) const {
 
     // 5. Sample a direction from the hit point to a potential source point [!! Return !!]
@@ -265,13 +277,11 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     }
     
     // 6. Recursively compute the radiance from a source point to the hit point
-    point_hit_above = point_hit + normal_hit * EPSILON;
     Ray ray_hit_to_source(point_hit_above, dir_hit_to_source); // create a ray from the hit point to the light source
     Vector3f radiance_source_to_hit = castRay(ray_hit_to_source, depth + 1, true); // recursively cast a ray to the light source
 
     // 7. Evaluate BRDF
-    Vector3f base_colour_rho = inter.obj->evalDiffuseColor(texture_hit); // diffuse color of the object at the intersection point
-    Vector3f brdf_value = inter.material->eval(dir_hit_to_source, normal_hit) * base_colour_rho; // Lambertian BRDF = rho * Kd / PI
+    Vector3f brdf_value = rho / M_PI; // Lambertian BRDF = rho / PI
 
     // 8. Cosine Factor
     float cos_theta = std::max(0.f, dotProduct(normal_hit, dir_hit_to_source)); // angle between light normal and light emission direction
@@ -312,13 +322,12 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
 
         Vector3f radiance_light = lightInter.material->m_emission; // radiance of the light
 
-        Vector3f base_colour_rho = inter.obj->evalDiffuseColor(texture_hit); 
-        Vector3f brdf = inter.material->eval(dir_hit_to_light, normal_hit) * base_colour_rho; // Lambertian BRDF = rho * Kd / PI
+        Vector3f brdf = rho / M_PI; // Lambertian BRDF = rho / PI
 
         float cos_i = std::max(0.f, dotProduct(dir_hit_to_light, normal_hit)); // angle between hit point normal and light source direction
         float cos_l = std::max(0.f, dotProduct(dir_light_to_hit, normal_light)); // angle between light normal and light emission direction
         
-        radiance_direct = brdf * radiance_light * cos_i * cos_l / len_hit_to_light_squared / pdf_light;
+        radiance_direct =  radiance_light * brdf * cos_i * cos_l / len_hit_to_light_squared / pdf_light;
     }
 
     // ================================== COMBINE ==================================
@@ -335,7 +344,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
 
         // if (naive_way){
         //     Vector3f I = dir_view_to_hit;
-        //     float kr = fresnel(I, normal_hit, material_hit->ior);
+        //     float kr = fresnel(I, normal_hit, ior);
         //     float reflect_weight = kr;
         //     float refract_weight = 1.0f - kr;
         //     Vector3f offset = normal_hit * EPSILON;
@@ -346,7 +355,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         //     radiance_reflect = radiance_reflect;
 
 
-        //     Vector3f Rr = refract(I, normal_hit, material_hit->ior);
+        //     Vector3f Rr = refract(I, normal_hit, ior);
         //     if (dotProduct(Rr, normal_hit) < 0)
         //         offset = -offset; // we are in the glass and going out
         //     Ray ray_hit_to_source_1(point_hit + offset, Rr);
@@ -369,7 +378,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
 
 // // Transparent Material: Reflection or Refraction (Dielectric logic)
 // Vector3f I = dir_view_to_hit;
-// float kr = fresnel(I, normal_hit, material_hit->ior); // dynamic Fresnel reflectance
+// float kr = fresnel(I, normal_hit, ior); // dynamic Fresnel reflectance
 // float reflect_prob = kr;
 // float refract_prob = 1.0f - kr;
 
@@ -390,7 +399,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
 //     return radiance_reflect;
 
 // } else {
-//     Vector3f Rr = refract(I, normal_hit, material_hit->ior);
+//     Vector3f Rr = refract(I, normal_hit, ior);
     
 //     // If the ray is going "into" the medium, offset inward
 //     if (dotProduct(Rr, normal_hit) < 0)
@@ -420,7 +429,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         // return Vector3f(0);
 
         // Vector3f I = dir_view_to_hit;
-        // float kr = fresnel(I, normal_hit, material_hit->ior);
+        // float kr = fresnel(I, normal_hit, ior);
         // float reflect_weight = kr;
         // float refract_weight = 1.0f - kr;
         // Vector3f offset = normal_hit * EPSILON;
@@ -432,7 +441,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         //     return radiance_reflect;
 
         // } else {
-        //     Vector3f Rr = refract(I, normal_hit, material_hit->ior);
+        //     Vector3f Rr = refract(I, normal_hit, ior);
         //     if (dotProduct(Rr, normal_hit) < 0)
         //         offset = -offset; // we are in the glass and going out
         //     Ray ray_hit_to_source(point_hit + offset, Rr);
@@ -573,7 +582,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     // Vector3f incoming_radiance = castRay(next_ray, depth + 1);
 
     // // BRDF and cosine
-    // Vector3f base_colour_rho = inter.obj->evalDiffuseColor(texture_hit);
+    // Vector3f base_colour_rho = inter.obj->rho;
     // Vector3f brdf = inter.material->eval(dir_hit_to_next, normal_hit) * base_colour_rho;
     // float cos_theta = std::max(0.f, dotProduct(normal_hit, dir_hit_to_next));
 
@@ -623,7 +632,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     //     radiance_source_to_hit = material_source->m_emission * cos_l; // radiance of the light source
 
     //     // f_r
-    //     Vector3f base_colour_rho = inter.obj->evalDiffuseColor(texture_hit); // diffuse color of the object at the intersection point
+    //     Vector3f base_colour_rho = inter.obj->rho; // diffuse color of the object at the intersection point
     //     brdf_value = inter.material->eval(dir_hit_to_source, normal_hit) * base_colour_rho; // Lambertian BRDF = rho * Kd / PI
 
 
@@ -655,7 +664,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     //     radiance_source_to_hit = castRay(ray_hit_to_source, depth + 1); // recursively cast a ray to the light source
 
     //     // f_r
-    //     Vector3f base_colour_rho = inter.obj->evalDiffuseColor(texture_hit); // diffuse color of the object at the intersection point
+    //     Vector3f base_colour_rho = inter.obj->rho; // diffuse color of the object at the intersection point
     //     brdf_value = inter.material->eval(dir_source_to_hit, normal_hit) * base_colour_rho; // Lambertian BRDF = rho * Kd / PI
 
     //     // cosine_i
