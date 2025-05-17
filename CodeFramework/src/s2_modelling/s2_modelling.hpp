@@ -2,6 +2,7 @@
 #include "Scene.hpp"
 #include "Triangle.hpp"
 #include "Sphere.hpp"
+#include <opencv2/opencv.hpp>
 
 inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
 {
@@ -88,6 +89,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     gold->opaqueness = 1;
     materials.push_back(gold);
 
+
     // std::shared_ptr<Material> stone = std::make_shared<Material>(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
     Material* stone = new Material(DIFFUSE, Vector3f(0.2f, 0.6f, 0.86f));
     stone->Kd = 0.8f;
@@ -97,7 +99,19 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     materials.push_back(stone);
 
 
-    
+    Material* yellow = new Material(DIFFUSE, Vector3f(1, 1, 0));
+    yellow->Kd = 0.8f; // diffuse reflection coefficient
+    yellow->Ks = 0.2f; // specular reflection coefficient
+    yellow->ior = 1.5f; // refractive index
+    yellow->opaqueness = 1;
+    materials.push_back(yellow);
+    cv::Mat image_data_bob = cv::imread("../models/bob-the-duck/bob_diffuse.png");
+    cv::cvtColor(image_data_bob, image_data_bob, cv::COLOR_RGB2BGR);
+    yellow->rho_texture_map = image_data_bob;
+
+
+
+
     std::unique_ptr<MeshTriangle> floor = std::make_unique<MeshTriangle>("../models/cornellbox/floor.obj", Vector3f(0), white);
     std::unique_ptr<MeshTriangle> left = std::make_unique<MeshTriangle>("../models/cornellbox/left.obj", Vector3f(0), mirror);
     std::unique_ptr<MeshTriangle> right = std::make_unique<MeshTriangle>("../models/cornellbox/right.obj", Vector3f(0), blue);
@@ -123,7 +137,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     scene.Add(std::move(shortBox));
 
 
-    std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), gold);
+    std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow);
     scene.Add(std::move(bob));
 
 
@@ -145,7 +159,30 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& materials)
     // std::shared_ptr<Material> mfloor = std::make_shared<Material>(DIFFUSE, Vector3f(0));
     Material* mfloor = new Material(DIFFUSE, Vector3f(0));
     // use a checkerboard texture pattern
-    mfloor->textured=true;
+
+
+    cv::Mat image_data = cv::imread("../models/bob-the-duck/bob_diffuse.png");
+    cv::cvtColor(image_data, image_data, cv::COLOR_RGB2BGR);
+    mfloor->rho_texture_map = image_data;
+
+
+    mfloor->rho_texture_map_implicit = [](Vector2f uv) -> Vector3f {
+    float scale = 5;
+    float u = fmodf(uv.x * scale, 1.0f);
+    float v = fmodf(uv.y * scale, 1.0f);
+    bool pattern = (u > 0.5f) ^ (v > 0.5f); // XOR checker
+    // Return two alternating colors
+    return pattern
+        ? Vector3f(0.815f, 0.235f, 0.031f)
+        : Vector3f(0.937f, 0.937f, 0.231f);
+    };
+
+
+
+
+
+
+
     // Add the two triangles to the scene
     scene.Add(std::make_unique<MeshTriangle>(verts, vertIndex, 2, st, mfloor));
 

@@ -8,6 +8,12 @@
 
 #include "Vector.hpp"
 #include "global.hpp"
+#include <Eigen/Eigen>
+#include <opencv2/opencv.hpp>
+
+#include <functional>
+;
+
 
 enum MaterialType {DIFFUSE, GLASS, EMIT, MIRROR};
 
@@ -139,6 +145,11 @@ private:
 
 
 public:
+    // !!!!!!!!!
+    cv::Mat rho_texture_map; // texture map
+    std::function<Vector3f(Vector2f)> rho_texture_map_implicit;
+
+
     MaterialType m_type; // either DIFFUSE, GLASS or EMIT
     Vector3f m_color; // base color
     Vector3f m_emission; // non-zero for light source
@@ -173,7 +184,44 @@ public:
     // given a ray direction and normal, calculate the contribution of this ray
     inline Vector3f eval(const Vector3f &dir, const Vector3f &N);
 
+
+
+    Vector3f getRho(Vector2f rho_p_coords) const
+    {
+        // If explicit function is defined, use it
+        if (rho_texture_map_implicit)
+        {
+            return rho_texture_map_implicit(rho_p_coords);
+        }
+        if (rho_texture_map.empty())
+        {
+            return Vector3f(0, 0, 0);
+        }
+
+
+        int width = rho_texture_map.cols;
+        int height = rho_texture_map.rows;
+        auto u_img = rho_p_coords.x * width;
+        auto v_img = (1 - rho_p_coords.y) * height;
+
+        try
+        {
+            auto color = rho_texture_map.at<cv::Vec3b>(v_img, u_img);
+            return Vector3f(color[0]/255.0f, color[1]/255.0f, color[2]/255.0f);
+        }
+        catch(const std::exception& e)
+        {   
+            std::cerr << "Error: " << e.what() << std::endl;
+            std::cerr << "Colour Not Found" << std::endl;
+            return Vector3f(0, 0, 0);
+        }
+    }
 };
+
+
+
+
+
 
 Material::Material(MaterialType t, Vector3f color){
     m_type = t;

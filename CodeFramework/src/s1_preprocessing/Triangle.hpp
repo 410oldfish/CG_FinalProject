@@ -16,9 +16,18 @@
 class Triangle : public Object
 {
 public:
+    // // std::shared_ptr<Material> m; // material of the mesh
+    // Material* m; // material of the mesh
+
+    Vector2f v0_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p1 on the pho texture map
+    Vector2f v1_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p2 on the pho texture map
+    Vector2f v2_rho_texture_coords; // the 2D coordinates used to get the pho (colour) value at p3 on the pho texture map
+
+
+
     Vector3f v0, v1, v2; // vertices A, B ,C , counter-clockwise order
     Vector3f e1, e2;     // 2 edges v1-v0, v2-v0;
-    Vector2f t0, t1, t2; // texture coords
+    // Vector2f t0, t1, t2; // texture coords
     Vector3f normal;
     float area;
     Material* m; // material of the triangle
@@ -155,9 +164,9 @@ public:
                                    face_vertices[2], mt);
 
             // Set the precomputed texture coordinates for each vertex of the triangle
-            tri->t0=st[vertsIndex[i*3]];
-            tri->t1=st[vertsIndex[i*3+1]];
-            tri->t2=st[vertsIndex[i*3+2]];
+            tri->v0_rho_texture_coords=st[vertsIndex[i*3]];
+            tri->v1_rho_texture_coords=st[vertsIndex[i*3+1]];
+            tri->v2_rho_texture_coords=st[vertsIndex[i*3+2]];
             
             // Store this triangle into the triangle list of the current mesh
             // triangles.push_back
@@ -220,11 +229,19 @@ public:
 
             // Extract the coordinates of the three vertices of the triangle
             std::array<Vector3f, 3> face_vertices;
+            std::array<Vector2f, 3> rho_texture_coords;
+
             for (int j = 0; j < 3; j++) {
                 auto vert = Vector3f(mesh.Vertices[i + j].Position.X+offset.x,
                                      mesh.Vertices[i + j].Position.Y+offset.y,
                                      mesh.Vertices[i + j].Position.Z+offset.z);
                 face_vertices[j] = vert;
+
+
+                auto rho_texture_coord = Vector2f(mesh.Vertices[i + j].TextureCoordinate.X,
+                                             mesh.Vertices[i + j].TextureCoordinate.Y);
+
+                rho_texture_coords[j] = rho_texture_coord;
                 
                 // Update the bounding box of the mesh
                 min_vert = Vector3f(std::min(min_vert.x, vert.x),
@@ -241,6 +258,10 @@ public:
             //                        face_vertices[2], mt);
             std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
                                    face_vertices[2], mt);
+
+            tri->v0_rho_texture_coords=rho_texture_coords[0];
+            tri->v1_rho_texture_coords=rho_texture_coords[1];
+            tri->v2_rho_texture_coords=rho_texture_coords[2];
 
             triangles.push_back(std::move(tri));
         }
@@ -299,6 +320,8 @@ public:
         // We are doing interpolation in the real world space, not in the screen space
         st = st0 * (1 - uv.x - uv.y) + st1 * uv.x + st2 * uv.y;
     }
+
+
 
     // Compute the diffuse based colour given a texture coordinate
     // The checkerboard texture is used
@@ -388,9 +411,7 @@ public:
     // BVHAccel* bvh; // BVH tree for fast intersection testing
     std::unique_ptr<BVHAccel> bvh; // BVH tree for fast intersection testing
     float area; // surface area of the mesh, used for sampling
-
-    // std::shared_ptr<Material> m; // material of the mesh
-    Material* m; // material of the mesh
+    Material* m; // material of the triangle
 };
 
 
@@ -489,39 +510,16 @@ inline Intersection Triangle::getIntersection(Ray ray)
 }
 
 
-inline Vector3f Triangle::evalDiffuseColor(const Vector2f& st) const
+inline Vector3f Triangle::evalDiffuseColor(const Vector2f& barry_centric_coords) const
 {
-    if(!m->textured)return m->getColor(); // if not textured, return color
-
-    // t0, t1, t2 are the texture coordinates of the triangle
-    // st is the barycentric coordinates of the point
-    auto uv = t0 * (1 - st.x - st.y) + t1 * st.x + t2 * st.y;
-    float scale = 5;
-
-    // Decide whether that UV point lands on a red or yellow square
-    // The pattern is a checkerboard pattern
+    if(m->rho_texture_map.empty())return m->getColor(); // if not textured, return color
 
 
-    // What does this line do?
-    // It takes the x and y coordinates of the UV point, multiplies them by the scale,
-    // and takes the modulus with 1.0 to get a value between 0 and 1.
-    // Then it checks if the value is greater than 0.5 and returns true or false.
-    // The ^ operator is a bitwise XOR operator, which means that it will return true
-    // if one of the values is true and the other is false.
-    float pattern = (fmodf(uv.x * scale, 1) > 0.5) ^ (fmodf(uv.y * scale, 1) > 0.5);
+    // Interpolate the texture coordinates using Barycentric coordinates
+    Vector2f v_rho_texture_coords = v0_rho_texture_coords * (1 - barry_centric_coords.x - barry_centric_coords.y) 
+                                + v1_rho_texture_coords * barry_centric_coords.x 
+                                + v2_rho_texture_coords * barry_centric_coords.y;
 
-    // What does this line do?
-    // It takes the pattern value and uses it to interpolate between two colors.
-    return lerp(Vector3f(0.815, 0.235, 0.031), Vector3f(0.937, 0.937, 0.231), pattern);
-
-    // Example:
-    // uv.x = 0.15, uv.y = 0.6
-    // scale = 5
-    // 0.15 * 5 = 0.75 -> fmod(0.75, 1) = 0.75
-    // 0.6 * 5 = 3.0 -> fmod(3.0, 1) = 0.0
-    // 0.75 > 0.5 = true
-    // 0.0 > 0.5 = false
-    // pattern = true ^ false = true
-    // So the color will be lerp(0.815, 0.235, 1), the colour is yellow
-    // If the pattern is false, the color will be lerp(0.937, 0.937, 0), the colour is red
+    Vector3f rho_p = m->getRho(v_rho_texture_coords); // get the rho value at the interpolated texture coordinates
+    return rho_p; // return the rho value
 }

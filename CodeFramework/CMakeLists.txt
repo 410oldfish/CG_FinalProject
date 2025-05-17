@@ -9,6 +9,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Enable OpenMP (optional)
 find_package(OpenMP)
+find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(${EIGEN3_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+
 
 # === Source Files ===
 set(SRC_FILES
@@ -52,6 +57,9 @@ target_include_directories(cgfinal PUBLIC
     ${PROJECT_SOURCE_DIR}/src/s4_postprocessing
     ${PROJECT_SOURCE_DIR}/src/utilities
 )
+
+target_link_libraries(cgfinal PUBLIC ${OpenCV_LIBS})
+
 
 # === Link OpenMP if available ===
 if(OpenMP_CXX_FOUND)
