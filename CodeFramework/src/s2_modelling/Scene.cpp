@@ -113,8 +113,8 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
 
     // Five parameters of the material
     Vector3f rho = material_hit->getRho(texture_hit); // diffuse color of the object
-    float kd = material_hit->getKd(texture_hit).norm(); // diffuse reflection coefficient
-    float ks = material_hit->getKs(texture_hit).norm(); // specular reflection coefficient
+    float kd = material_hit->getKd(texture_hit).x; // diffuse reflection coefficient
+    float ks = material_hit->getKs(texture_hit).x; // specular reflection coefficient
     float ior = material_hit->getIor(texture_hit); // index of refraction
     float opaqueness = material_hit->getOpaqueness(texture_hit); // opaqueness
 

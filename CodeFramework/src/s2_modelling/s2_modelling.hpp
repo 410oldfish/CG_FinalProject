@@ -38,8 +38,8 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     Material* blue = new Material();
     loaded_materials.push_back(blue);
     blue->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.6f, 0.86f);};
-    blue->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
-    blue->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
+    blue->kd_map_implicit = [](Vector2f uv) {return Vector3f(1.0f, 1.0f, 1.0f);};
+    blue->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.0f, 0.0f, 0.0f);};
     blue->ior_map_implicit = [](Vector2f uv) {return 1.46f;};
     blue->opaqueness_map_implicit = [](Vector2f uv) {return 1.f;};
 
@@ -58,7 +58,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     white->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.48f, 0.45f, 0.4f);}; // always return white
     white->kd_map_implicit = [](Vector2f uv) {return 0.8f * Vector3f(1);};
     white->ks_map_implicit = [](Vector2f uv) {return 0.2f * Vector3f(1);};
-    white->ior_map_implicit = [](Vector2f uv) {return 100.f;};
+    white->ior_map_implicit = [](Vector2f uv) {return 5.f;};
     white->opaqueness_map_implicit = [](Vector2f uv) {return 1.f;};
 
 
@@ -100,7 +100,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     light->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.8,0.8,0.8);}; // always return light
     light->m_type = EMIT;
     // Yellow light
-    light->m_emission= 100 * Vector3f(1.f, 1.f, 1.f); // emission color of the light
+    light->m_emission= 60 * Vector3f(1.f, 1.f, 1.f); // emission color of the light
     light->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
     light->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
     light->ior_map_implicit = [](Vector2f uv) {return 1.5f;};
@@ -112,8 +112,8 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     Material* frosted_glass = new Material();
     frosted_glass->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.5f, 0.7f, 0.13f);}; // always return frosted glass
     loaded_materials.push_back(frosted_glass);
-    frosted_glass->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);}; // no diffuse reflection
-    frosted_glass->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);}; // full specular reflection
+    frosted_glass->kd_map_implicit = [](Vector2f uv) {return 0.2f * Vector3f(1);}; // no diffuse reflection
+    frosted_glass->ks_map_implicit = [](Vector2f uv) {return 0.8f * Vector3f(1);}; // full specular reflection
     frosted_glass->ior_map_implicit = [](Vector2f uv) {return 1.5f;}; // refractive index
     frosted_glass->opaqueness_map_implicit = [](Vector2f uv) {return 0.2f;}; // fully transparent
 
@@ -153,16 +153,16 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     loaded_materials.push_back(mfloor);
 
 
-    // mfloor->rho_map_implicit = [](Vector2f uv) -> Vector3f {
-    // float scale = 5;
-    // float u = fmodf(uv.x * scale, 1.0f);
-    // float v = fmodf(uv.y * scale, 1.0f);
-    // bool pattern = (u > 0.5f) ^ (v > 0.5f); // XOR checker
-    // // Return two alternating colors
-    // return pattern
-    //     ? Vector3f(0.815f, 0.235f, 0.031f)
-    //     : Vector3f(0.937f, 0.937f, 0.231f);
-    // };
+    mfloor->rho_map_implicit = [](Vector2f uv) -> Vector3f {
+    float scale = 5;
+    float u = fmodf(uv.x * scale, 1.0f);
+    float v = fmodf(uv.y * scale, 1.0f);
+    bool pattern = (u > 0.5f) ^ (v > 0.5f); // XOR checker
+    // Return two alternating colors
+    return pattern
+        ? Vector3f(0.815f, 0.235f, 0.031f)
+        : Vector3f(0.937f, 0.937f, 0.231f);
+    };
 
     // // UV
     // mfloor->rho_map_implicit = [](Vector2f uv) {
@@ -177,10 +177,10 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // };
 
     // Stripes
-    mfloor->rho_map_implicit = [](Vector2f uv) {
-    float stripes = sin(uv.x * 40.0f);
-    return stripes > 0 ? Vector3f(0.7, 0.3, 0.3) : Vector3f(0.3, 0.3, 0.7);
-    };
+    // mfloor->rho_map_implicit = [](Vector2f uv) {
+    // float stripes = sin(uv.x * 40.0f);
+    // return stripes > 0 ? Vector3f(0.7, 0.3, 0.3) : Vector3f(0.3, 0.3, 0.7);
+    // };
 
 
     mfloor->rho_map_implicit = [](Vector2f uv) -> Vector3f {
