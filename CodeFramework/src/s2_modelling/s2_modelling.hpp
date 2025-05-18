@@ -219,29 +219,32 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // std::unique_ptr<MeshTriangle> glass_cup = std::make_unique<MeshTriangle>("../models/glass/glass_m.obj", Vector3f(0));
     // scene.Add(std::move(glass_cup));
 
-    std::unique_ptr<MeshTriangle> window_wall = std::make_unique<MeshTriangle>("../models/window/wall.obj", Vector3f(275, 0, 500), white, loaded_materials);
-    std::unique_ptr<MeshTriangle> window_body = std::make_unique<MeshTriangle>("../models/window/window2.obj", Vector3f(275, 0, 500), white, loaded_materials);
-    
+    // std::unique_ptr<MeshTriangle> window_wall = std::make_unique<MeshTriangle>("../models/window/wall.obj", Vector3f(275, 0, 500), white, loaded_materials);
+    // std::unique_ptr<MeshTriangle> window_body = std::make_unique<MeshTriangle>("../models/window/window2.obj", Vector3f(275, 0, 500), white, loaded_materials);
+    std::unique_ptr<MeshTriangle> window = std::make_unique<MeshTriangle>("../models/window/window.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
 
-    std::unique_ptr<MeshTriangle> shortBox = std::make_unique<MeshTriangle>("../models/cornellbox/shortbox.obj", Vector3f(0), frosted_glass, loaded_materials);
-    std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow, loaded_materials);
+    std::unique_ptr<MeshTriangle> table = std::make_unique<MeshTriangle>("../models/table/table.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
 
-
-    std::unique_ptr<Sphere> glass_sphere = std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass);
-    std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green);
+    // std::unique_ptr<MeshTriangle> shortBox = std::make_unique<MeshTriangle>("../models/cornellbox/shortbox.obj", Vector3f(0), frosted_glass, loaded_materials);
+    // std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow, loaded_materials);
 
 
+    // std::unique_ptr<Sphere> glass_sphere = std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass);
+    // std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green);
 
-    scene.Add(std::move(window_wall));
-    scene.Add(std::move(window_body));
+
+
+    scene.Add(std::move(window));
+    scene.Add(std::move(table));
+    // scene.Add(std::move(window_body));
     scene.Add(std::move(floor));
     scene.Add(std::move(left));
     scene.Add(std::move(right));
     scene.Add(std::move(light_));
-    scene.Add(std::move(shortBox));
-    scene.Add(std::move(bob));
-    scene.Add(std::move(glass_sphere));
-    scene.Add(std::move(green_sphere));
+    // scene.Add(std::move(shortBox));
+    // scene.Add(std::move(bob));
+    // scene.Add(std::move(glass_sphere));
+    // scene.Add(std::move(green_sphere));
 
 
     // ======= Additional objects =======

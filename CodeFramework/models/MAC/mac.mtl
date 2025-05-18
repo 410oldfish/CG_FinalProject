@@ -1,0 +1,32 @@
+# Blender 4.4.3 MTL File: 'main.blend'
+# www.blender.org
+
+newmtl wire_025115220
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd ../models/MAC/1_Base_color.png
+
+newmtl wire_081206230
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd ../models/MAC/2_Base_color.png
+
+newmtl wire_163224020
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd ../models/MAC/3_Base_color.png
