@@ -222,8 +222,14 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // std::unique_ptr<MeshTriangle> window_wall = std::make_unique<MeshTriangle>("../models/window/wall.obj", Vector3f(275, 0, 500), white, loaded_materials);
     // std::unique_ptr<MeshTriangle> window_body = std::make_unique<MeshTriangle>("../models/window/window2.obj", Vector3f(275, 0, 500), white, loaded_materials);
     std::unique_ptr<MeshTriangle> window = std::make_unique<MeshTriangle>("../models/window/window.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
-
     std::unique_ptr<MeshTriangle> table = std::make_unique<MeshTriangle>("../models/table/table.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+    std::unique_ptr<MeshTriangle> rabbit = std::make_unique<MeshTriangle>("../models/rabbit/bunny.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+    std::unique_ptr<MeshTriangle> lamp = std::make_unique<MeshTriangle>("../models/lamp/lamp.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+    std::unique_ptr<MeshTriangle> plant = std::make_unique<MeshTriangle>("../models/plant/plant.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+    std::unique_ptr<MeshTriangle> cannon = std::make_unique<MeshTriangle>("../models/cannon/cannon.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+    std::unique_ptr<MeshTriangle> glass_cup = std::make_unique<MeshTriangle>("../models/glass/glass_cup.obj", Vector3f(0, 0, 0), nullptr, loaded_materials);
+
+
 
     // std::unique_ptr<MeshTriangle> shortBox = std::make_unique<MeshTriangle>("../models/cornellbox/shortbox.obj", Vector3f(0), frosted_glass, loaded_materials);
     // std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow, loaded_materials);
@@ -236,6 +242,12 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
 
     scene.Add(std::move(window));
     scene.Add(std::move(table));
+    scene.Add(std::move(rabbit));
+    scene.Add(std::move(lamp));
+    scene.Add(std::move(plant));
+    scene.Add(std::move(cannon));
+    scene.Add(std::move(glass_cup));    
+
     // scene.Add(std::move(window_body));
     scene.Add(std::move(floor));
     scene.Add(std::move(left));
