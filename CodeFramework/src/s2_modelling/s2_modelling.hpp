@@ -97,14 +97,14 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // std::shared_ptr<Material> light = std::make_shared<Material>(EMIT, Vector3f(1));
     Material* light = new Material();
     loaded_materials.push_back(light);
-    light->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.8,0.8,0.8);}; // always return light
+    // light->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.8,0.8,0.8);}; // always return light
     light->m_type = EMIT;
     // Yellow light
     light->m_emission= 60 * Vector3f(1.f, 1.f, 1.f); // emission color of the light
-    light->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
-    light->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
-    light->ior_map_implicit = [](Vector2f uv) {return 1.5f;};
-    light->opaqueness_map_implicit = [](Vector2f uv) {return 1.f;}; // fully opaque
+    // light->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
+    // light->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
+    // light->ior_map_implicit = [](Vector2f uv) {return 1.5f;};
+    // light->opaqueness_map_implicit = [](Vector2f uv) {return 1.f;}; // fully opaque
     
 
 
@@ -216,8 +216,8 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     std::unique_ptr<MeshTriangle> right = std::make_unique<MeshTriangle>("../models/cornellbox/right.obj", Vector3f(0), blue, loaded_materials);
     std::unique_ptr<MeshTriangle> light_ = std::make_unique<MeshTriangle>("../models/cornellbox/light.obj", Vector3f(0, -5, 0), light, loaded_materials);
 
-    // std::unique_ptr<MeshTriangle> glass_cup = std::make_unique<MeshTriangle>("../models/glass/glass_m.obj", Vector3f(0));
-    // scene.Add(std::move(glass_cup));
+    std::unique_ptr<MeshTriangle> rin = std::make_unique<MeshTriangle>("../models/rin/rin_2.obj", Vector3f(400, 0, 400), yellow, loaded_materials);
+    scene.Add(std::move(rin));
 
     // std::unique_ptr<MeshTriangle> window_wall = std::make_unique<MeshTriangle>("../models/window/wall.obj", Vector3f(275, 0, 500), white, loaded_materials);
     // std::unique_ptr<MeshTriangle> window_body = std::make_unique<MeshTriangle>("../models/window/window2.obj", Vector3f(275, 0, 500), white, loaded_materials);
@@ -235,8 +235,18 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // std::unique_ptr<MeshTriangle> bob = std::make_unique<MeshTriangle>("../models/bob-the-duck/bob.obj", Vector3f(0), yellow, loaded_materials);
 
 
-    // std::unique_ptr<Sphere> glass_sphere = std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass);
-    // std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green);
+    std::unique_ptr<Sphere> glass_sphere = std::make_unique<Sphere>(Vector3f(440, 60, 100), 60, glass); glass_sphere->name = "glass_sphere";
+    std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(380, 60, 400), 60, green); green_sphere->name = "green_sphere";
+
+
+    Material* ball_light = new Material();
+    loaded_materials.push_back(light);
+    // light->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.8,0.8,0.8);}; // always return light
+    ball_light->m_type = EMIT;
+    // Yellow light
+    ball_light->m_emission= 5 * Vector3f(1.f, 1.f, 1.f); // emission color of the light
+    std::unique_ptr<Sphere> light_sphere = std::make_unique<Sphere>(Vector3f(0,400, 0), 30, light);
+    // light_sphere->m_type = EMIT;
 
 
 
@@ -255,8 +265,12 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     scene.Add(std::move(light_));
     // scene.Add(std::move(shortBox));
     // scene.Add(std::move(bob));
-    // scene.Add(std::move(glass_sphere));
+    scene.Add(std::move(glass_sphere));
     // scene.Add(std::move(green_sphere));
+    scene.Add(std::move(light_sphere));
+
+
+    std::cout << scene.light_sources.size() << std::endl;
 
 
     // ======= Additional objects =======

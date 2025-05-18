@@ -29,28 +29,44 @@ Intersection Scene::intersect(const Ray &ray) const
 void Scene::sampleLight(Intersection &pos, float &pdf) const
 {   
     // Compute the total surface area of all emissive objects
-    float emit_area_sum = 0;
-    for (uint32_t k = 0; k < light_sources.size(); ++k) {
-        if (light_sources[k]->hasEmit()){
-            pos.happened=true;  // area light that has emission exists
-            emit_area_sum += light_sources[k]->getArea();
-        }
-    }
+    // float emit_area_sum = 0;
+    // for (uint32_t k = 0; k < light_sources.size(); ++k) {
+    //     if (true){
+    //         pos.happened=true;  // area light that has emission exists
+    //         emit_area_sum += light_sources[k]->getArea();
+    //     }
+    // }
 
-    // Get a random number between 0 and the total surface area
+    // // Get a random number between 0 and the total surface area
+    // float p = get_random_float() * emit_area_sum;
+
+    // // Fine the object that corresponds to the random number
+    // emit_area_sum = 0;
+    // for (uint32_t k = 0; k < light_sources.size(); ++k) {
+    //     if (true){
+    //         emit_area_sum += light_sources[k]->getArea();
+    //         if (p <= emit_area_sum){
+    //             light_sources[k]->Sample(pos, pdf);
+    //             pdf = pdf * (light_sources[k]->getArea() / emit_area_sum); // pdf is the pdf of a single light source
+    //             break;
+    //         }
+    //     }
+    // }
+    float emit_area_sum = 0;
+    for (const auto& light : light_sources) {
+        emit_area_sum += light->getArea();
+    }
+    float emit_area_sum_original = emit_area_sum; // Save the original area sum for normalization
     float p = get_random_float() * emit_area_sum;
 
-    // Fine the object that corresponds to the random number
-    emit_area_sum = 0;
-    for (uint32_t k = 0; k < light_sources.size(); ++k) {
-        if (light_sources[k]->hasEmit()){
-            emit_area_sum += light_sources[k]->getArea();
-            if (p <= emit_area_sum){
-                light_sources[k]->Sample(pos, pdf);
-                pdf = pdf * (light_sources[k]->getArea() / emit_area_sum); // pdf is the pdf of a single light source
-                break;
-            }
+    for (const auto& light : light_sources) {
+        float area = light->getArea();
+        if (p <= emit_area_sum + area) {
+            light->Sample(pos, pdf); // This gives: pdf_obj = 1 / area
+            pdf = pdf * (area / emit_area_sum_original); // Normalize to global PDF
+            return;
         }
+        emit_area_sum += area;
     }
 }
 
@@ -100,16 +116,27 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         return Vector3f(0); // It is more physically correct to return nothing instead of the background color
 
 
+    // 4. Evaluate Direct Light [!! Return !!]
+    if (inter.material->m_type == EMIT) {
+        if (has_evaluated_diffuse_previously){
+            return Vector3f(0);
+        } else {
+            Vector3f radiance_emit = inter.material->getEmission(); // emission color of the object
+            return radiance_emit / RussianRoulette; // return the emission color directly
+        }
+    }
+
     // Hit point information
     Vector3f point_hit = inter.coords; // Hit point coordinates
     Vector3f normal_hit = inter.normal.normalized(); // Normal at the hit point
-    Vector3f point_hit_above = point_hit + normal_hit * EPSILON; // hit point above the surface
+    Vector3f dir_hit_to_view = -ray.direction.normalized(); // outgoing light direction from the hit point to the camera
+    Vector3f dir_view_to_hit = ray.direction.normalized(); // direction from the camera to the hit point
+
+
     Vector2f texture_hit = inter.tcoords; // Texture Barycentric coordinates at the hit point
     Object * object_hit = inter.obj; // Object that was hit
     // Material * material_hit = inter.material; // Material of the object that was hit
     Material* material_hit = inter.material; // Material of the object that was hit
-    Vector3f dir_hit_to_view = -ray.direction.normalized(); // outgoing light direction from the hit point to the camera
-    Vector3f dir_view_to_hit = ray.direction.normalized(); // direction from the camera to the hit point
 
     // Five parameters of the material
     Vector3f rho = material_hit->getRho(texture_hit); // diffuse color of the object
@@ -123,15 +150,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
     // float ks = material_hit->Ks; // specular reflection coefficient
     // float opaqueness = material_hit->opaqueness;
 
-    // 4. Evaluate Direct Light [!! Return !!]
-    if (inter.material->m_type == EMIT) {
-        if (has_evaluated_diffuse_previously){
-            return Vector3f(0);
-        } else {
-            Vector3f radiance_emit = inter.material->getEmission(); // emission color of the object
-            return radiance_emit / RussianRoulette; // return the emission color directly
-        }
-    }
+
+
+
+
     // if (inter.material->m_type == EMIT && !has_evaluated_diffuse_previously){
     //     Vector3f radiance_emit = inter.material->getEmission(); // emission color of the object
     //     return radiance_emit / RussianRoulette; // return the emission color directly
@@ -147,6 +169,14 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
     if (get_random_float() < opaque_weight){
 
         // ============================== [P2.1: DIFFUSE, SPECULAR, OR ABSORPTION ?] ==============================
+
+        // Determine whether we has hit the front or back side of the object
+        // if (dotProduct(dir_view_to_hit, normal_hit) > 0){
+        //     normal_hit = -normal_hit; // flip the normal
+        //     std::cout << "Warning: Light hit the back side of " << inter.obj->name << "and it is opque." << std::endl;
+        // }
+        Vector3f point_hit_above = point_hit + normal_hit * EPSILON; // hit point above the surface
+
 
         // Diffuse or not
         float diffuse_weight = kd;
@@ -231,9 +261,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         float kr = fresnel(I, normal_hit, ior);
         float reflect_weight = kr;
         float refract_weight = 1.0f - kr;
-        Vector3f offset = normal_hit * EPSILON;
+        Vector3f offset;
         if (get_random_float() < reflect_weight){
             Vector3f Rl = reflect(I, normal_hit);
+            offset = normal_hit * EPSILON; // slightly above the surface
             Ray ray_hit_to_source(point_hit + offset, Rl);
             Vector3f radiance_reflect = castRay(ray_hit_to_source, depth + 1, has_evaluated_diffuse_previously); // * reflect_weight * transparent_weight
             radiance_reflect = radiance_reflect / RussianRoulette; // -- / reflect_weight / transparent_weight (cancelled out!!!)
@@ -241,8 +272,11 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
 
         } else {
             Vector3f Rr = refract(I, normal_hit, ior);
-            if (dotProduct(Rr, normal_hit) < 0)
-                offset = -offset; // we are in the glass and going out
+            if (dotProduct(I, normal_hit) < 0)
+                offset = normal_hit * -EPSILON; // The ray is outside and entering the surface
+            else
+                offset = normal_hit * EPSILON; // The ray is inside and exiting the surface
+
             Ray ray_hit_to_source(point_hit + offset, Rr);
             Vector3f radiance_refract = castRay(ray_hit_to_source, depth + 1, has_evaluated_diffuse_previously); // * refract_weight * transparent_weight
             radiance_refract = radiance_refract / RussianRoulette; // -- / refract_weight / transparent_weight (cancelled out!!!)
@@ -304,7 +338,6 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     }
 
     // Shadow Test
-    point_hit_above = point_hit + normal_hit * EPSILON;
     Vector3f shadow_ray_dir = (lightInter.coords - point_hit_above).normalized(); // shadow ray direction
     float shadow_ray_len = (lightInter.coords - point_hit_above).norm(); // distance from hitPoint to light
     Ray shadow_ray(point_hit_above, shadow_ray_dir); // create a shadow ray

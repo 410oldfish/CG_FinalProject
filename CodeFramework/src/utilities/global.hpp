@@ -72,6 +72,9 @@ inline void UpdateProgress(float progress)
 inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrix(const std::string& path)
 {
     // Load image in BGR format
+    // ../models
+    // Add the path to the image file
+    path = "../models/" + path;
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
     std::cout << "Loading image: " << path << std::endl;
     if (image.empty()) {
@@ -104,6 +107,7 @@ inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrix
 inline Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrixBW(const std::string& path)
 {
     // Load image in grayscale format
+    path = "../models/" + path;
     cv::Mat image = cv::imread(path, cv::IMREAD_GRAYSCALE);
     if (image.empty()) {
         throw std::runtime_error("Failed to load image at path: " + path);

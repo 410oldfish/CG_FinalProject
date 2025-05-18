@@ -15,10 +15,13 @@
 #include "Bounds3.hpp" // Include the Bounds3 class for bounding box operations
 #include "Ray.hpp" // Include the Ray class for ray operations
 #include "Intersection.hpp" // Include the Intersection class for intersection operations
+#include <string> // Include string for object names
 
 class Object
 {
 public:
+    std::string name = "Unknown"; // Name of the object
+
     // Constructor and destructor
     Object() {}
     virtual ~Object() {}

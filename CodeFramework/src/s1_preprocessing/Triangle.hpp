@@ -203,6 +203,8 @@ public:
         objl::Loader loader;
         loader.LoadFile(filename);
 
+        name = filename;
+
         // Initialse area to 0
         area = 0;
         
@@ -256,12 +258,12 @@ public:
                     m->opaqueness_map = loadImageAsMatrixBW(material_raw->map_d);
                 }
 
-                // std:: cout << "Material name: " << material_raw->name << std::endl;
-                // std:: cout << "rho: " m->getRho(Vector2f(0.5, 0.5)) << std::endl;
-                // std:: cout << "ks: " m->getKs(Vector2f(0.5, 0.5)) << std::endl;
-                // std:: cout << "kd: " m->getKd(Vector2f(0.5, 0.5)) << std::endl;
-                // std:: cout << "ior: " m->getIor(Vector2f(0.5, 0.5)) << std::endl;
-                // std:: cout << "opaqueness: " m->getOpaqueness(Vector2f(0.5, 0.5)) << std::endl;
+                std:: cout << "Material name: " << material_raw->name << std::endl;
+                std:: cout << "rho: " << m->getRho(Vector2f(0.5, 0.5)) << std::endl;
+                std:: cout << "ks: " << m->getKs(Vector2f(0.5, 0.5)) << std::endl;
+                std:: cout << "kd: " << m->getKd(Vector2f(0.5, 0.5)) << std::endl;
+                std:: cout << "ior: " << m->getIor(Vector2f(0.5, 0.5)) << std::endl;
+                std:: cout << "opaqueness: " << m->getOpaqueness(Vector2f(0.5, 0.5)) << std::endl;
             }
             
             for (int i = 0; i < mesh.Vertices.size(); i += 3) {
@@ -297,6 +299,8 @@ public:
                 std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
                                     face_vertices[2], m);
 
+                tri->name = filename;
+
                 tri->v0_texture_coords=rho_texture_coords[0];
                 tri->v1_texture_coords=rho_texture_coords[1];
                 tri->v2_texture_coords=rho_texture_coords[2];
@@ -318,6 +322,8 @@ public:
         // Create a BVH tree from the triangle pointers
         bvh = std::make_unique<BVHAccel>(std::move(ptrs));
     }
+
+
 
     // Return the mesh's overall bounding box
     // @ return the bounding box of the mesh
