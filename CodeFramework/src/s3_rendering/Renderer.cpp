@@ -135,9 +135,9 @@ void Renderer::Render(const Scene& scene)
                     Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
 
                     Eigen::Vector3f dir_screen_eigen = Eigen::Vector3f(dir_screen.x, dir_screen.y, dir_screen.z);
-                    float x_rotate = -20.f;
+                    float x_rotate = 0.f;
                     float y_rotate = 0.f;
-                    float z_rotate = 0.f;
+                    float z_rotate = 20.f;
 
                     // Rotate dir_screen by a degrees around the x-axis
                     Eigen::Matrix3f rotation_matrix;
