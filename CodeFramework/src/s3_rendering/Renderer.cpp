@@ -12,6 +12,7 @@
 #include "Scene.hpp"
 #include "Renderer.hpp"
 #include "Material.hpp"
+#include <Eigen/Eigen>
 
 #ifdef _OPENMP
     #include <omp.h>
@@ -132,6 +133,23 @@ void Renderer::Render(const Scene& scene)
 
                     // The ray direction in the camera space, i.e., originating at (0,0,0) with a direction of (px, py, 1)
                     Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
+
+                    Eigen::Vector3f dir_screen_eigen = Eigen::Vector3f(dir_screen.x, dir_screen.y, dir_screen.z);
+                    float x_rotate = -20.f;
+                    float y_rotate = 0.f;
+                    float z_rotate = 0.f;
+
+                    // Rotate dir_screen by a degrees around the x-axis
+                    Eigen::Matrix3f rotation_matrix;
+                    rotation_matrix = Eigen::AngleAxisf(deg2rad(x_rotate), Eigen::Vector3f(1, 0, 0)).toRotationMatrix();
+                    rotation_matrix *= Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f(0, 1, 0)).toRotationMatrix();
+                    rotation_matrix *= Eigen::AngleAxisf(deg2rad(z_rotate), Eigen::Vector3f(0, 0, 1)).toRotationMatrix();
+                    dir_screen_eigen = rotation_matrix * dir_screen_eigen;
+
+                    dir_screen.x = dir_screen_eigen(0);
+                    dir_screen.y = dir_screen_eigen(1);
+                    dir_screen.z = dir_screen_eigen(2);
+
 
                     // The ray direction in the world space, i.e., originating at (eye_pos) with a direction of (dir)
                     // The camera’s “look” axes are aligned with the world axes, no extra rotation is needed

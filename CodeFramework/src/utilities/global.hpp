@@ -73,6 +73,7 @@ inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrix
 {
     // Load image in BGR format
     cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
+    std::cout << "Loading image: " << path << std::endl;
     if (image.empty()) {
         throw std::runtime_error("Failed to load image at path: " + path);
     }

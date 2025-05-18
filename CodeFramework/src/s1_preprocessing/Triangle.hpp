@@ -256,6 +256,12 @@ public:
                     m->opaqueness_map = loadImageAsMatrixBW(material_raw->map_d);
                 }
 
+                // std:: cout << "Material name: " << material_raw->name << std::endl;
+                // std:: cout << "rho: " m->getRho(Vector2f(0.5, 0.5)) << std::endl;
+                // std:: cout << "ks: " m->getKs(Vector2f(0.5, 0.5)) << std::endl;
+                // std:: cout << "kd: " m->getKd(Vector2f(0.5, 0.5)) << std::endl;
+                // std:: cout << "ior: " m->getIor(Vector2f(0.5, 0.5)) << std::endl;
+                // std:: cout << "opaqueness: " m->getOpaqueness(Vector2f(0.5, 0.5)) << std::endl;
             }
             
             for (int i = 0; i < mesh.Vertices.size(); i += 3) {
