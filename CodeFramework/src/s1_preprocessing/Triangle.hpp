@@ -10,8 +10,14 @@
 #include <array>
 #include <cstring>
 // Eigen and OpenCV
-#include <Eigen/Eigen>
+#include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
+#include <filesystem>
+#include <iostream>
+#include <map>
+#include <string>
+
+namespace fs = std::filesystem;
 
 // ========================= TRIANGLE CLASS ========================= //
 
@@ -196,8 +202,11 @@ public:
     // @ param filename is the name of the OBJ file
     // @ param offset is the offset to be added to each vertex position
     // @ param mt is the material of the mesh
-    MeshTriangle(const std::string& filename, Vector3f offset, 
-                    Material* default_material, std::vector<Material*>& loaded_materials)
+    MeshTriangle(const std::string& filename, 
+                    Vector3f offset, 
+                    Material* default_material, 
+                    std::vector<Material*>& loaded_materials,
+                    std::map<std::string, void * >& opened_images)
     {   
         // Load the OBJ file using the objl::Loader class
         objl::Loader loader;
@@ -220,9 +229,9 @@ public:
             m = default_material;
             auto material_raw = mesh.MeshMaterial;
             if (material_raw.has_value()){
+            
                 m = new Material(DIFFUSE, Vector3f(material_raw->Ka.X, material_raw->Ka.Y, material_raw->Ka.Z));
                 loaded_materials.push_back(m);
-
 
                 m->rho_map_implicit = [material_raw](Vector2f uv) {
                     return Vector3f(material_raw->Kd.X, material_raw->Kd.Y, material_raw->Kd.Z);
@@ -246,16 +255,31 @@ public:
 
                 // If String is not empty, set the texture maps
                 if (!material_raw->map_Kd.empty()){
-                    m->rho_map = loadImageAsMatrix(material_raw->map_Kd);
+                    m->rho_map = loadImageAsMatrix(opened_images, fs::path(material_raw->map_Kd), fs::path(filename).parent_path());
                 }
                 if (!material_raw->map_Ks.empty()){
-                    m->ks_map = loadImageAsMatrix(material_raw->map_Ks);
-                    m->kd_map = m->ks_map.unaryExpr([](const Vector3f& ks) {
-                        return Vector3f(1.0f, 1.0f, 1.0f) - ks;
-                    });
+                    if (!material_raw->map_Ks.empty()) {
+                    std::string ks_path_str = material_raw->map_Ks;  // e.g., "texture/ks.jpg"
+                    fs::path ks_path = fs::path(ks_path_str);
+                    fs::path model_dir = fs::path(filename).parent_path();
+
+                    // Load ks_map (and cache if not already cached)
+                    m->ks_map = loadImageAsMatrix(opened_images, ks_path, model_dir);
+
+                    // Compute kd_map = 1 - ks_map
+                    m->kd_map = new Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>(
+                        m->ks_map->unaryExpr([](const Vector3f& ks) {
+                            return Vector3f(1.0f, 1.0f, 1.0f) - ks;
+                        })
+                    );
+
+                    // Construct key for kd_map and cache it
+                    std::string kd_key = "Kd_" + (model_dir / ks_path).string();  // or any unique logic
+                    opened_images[kd_key] = m->kd_map;
                 }
+                                }
                 if (!material_raw->map_d.empty()){
-                    m->opaqueness_map = loadImageAsMatrixBW(material_raw->map_d);
+                    m->opaqueness_map = loadImageAsMatrixBW(opened_images, fs::path(material_raw->map_d), fs::path(filename).parent_path());
                 }
 
                 std:: cout << "Material name: " << material_raw->name << std::endl;
@@ -299,7 +323,7 @@ public:
                 std::unique_ptr<Triangle> tri = std::make_unique<Triangle>(face_vertices[0], face_vertices[1],
                                     face_vertices[2], m);
 
-                tri->name = filename;
+                tri->name = mesh.MeshName;
 
                 tri->v0_texture_coords=rho_texture_coords[0];
                 tri->v1_texture_coords=rho_texture_coords[1];

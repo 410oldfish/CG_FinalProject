@@ -27,11 +27,13 @@ int main(int argc, char** argv)
         scene.spp = 32;
     }
     // Stage 1
-    std::vector<Material*> materials;
     s1_preprocessing(); // Do Nothing
 
+    std::vector<Material*> materials;
+    std::map<std::string, void * > opened_images;
+
     // Stage 2
-    s2_modelling(scene, materials);
+    s2_modelling(scene, materials, opened_images);
 
     // Stage 3
     auto start = std::chrono::system_clock::now();

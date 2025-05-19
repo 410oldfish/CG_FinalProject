@@ -177,7 +177,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         // }
         Vector3f point_hit_above = point_hit + normal_hit * EPSILON; // hit point above the surface
 
-
+ 
         // Diffuse or not
         float diffuse_weight = kd;
         float specular_weight = ks;
@@ -306,7 +306,8 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     float pdf_dir_hit_to_source = inter.material->pdf(dir_view_to_hit, dir_hit_to_source, normal_hit); // pdf of the sampled direction
     // Define a very small local EPSILON
     if (pdf_dir_hit_to_source <= 0) {
-        std::cout << "ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
+        std::cout << "Mesh Name: " << inter.obj->name << std::endl;
+        std::cout << "Indirect Light ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
         pdf_dir_hit_to_source = SMALL_EPSILON;
     }
     
@@ -333,7 +334,8 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
     Vector3f dir_hit_to_light = normalize(lightInter.coords - point_hit_above);
 
     if (pdf_light <= 0) {
-        std::cout << "ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
+        std::cout << "Mesh Name: " << inter.obj->name << std::endl; 
+        std::cout << "Direct Light ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
         pdf_light = SMALL_EPSILON;
     }
 

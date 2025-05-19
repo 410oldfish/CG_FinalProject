@@ -150,23 +150,23 @@ public:
 
     // Rho
     std::function<Vector3f(Vector2f)> rho_map_implicit; // base colour
-    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> rho_map; // base colour
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> * rho_map; // base colour
 
     // kd
     std::function<Vector3f(Vector2f)> kd_map_implicit; // diffuse reflection coefficient
-    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> kd_map; // diffuse reflection coefficient
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> * kd_map; // diffuse reflection coefficient
 
     // ks
     std::function<Vector3f(Vector2f)> ks_map_implicit; // specular reflection coefficient
-    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> ks_map; // specular reflection coefficient
+    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> * ks_map; // specular reflection coefficient
 
     // ior
     std::function<float(Vector2f)> ior_map_implicit; // refractive index
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> ior_map; // refractive index
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> * ior_map; // refractive index
 
     // opaqueness
     std::function<float(Vector2f)> opaqueness_map_implicit; // opaqueness
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> opaqueness_map; // opaqueness
+    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> * opaqueness_map; // opaqueness
     
 
 
@@ -214,15 +214,15 @@ public:
     inline Vector3f getRho(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (rho_map.size() !=0)
+        if (rho_map && rho_map->size() !=0)
         {
-            int width = rho_map.cols();
-            int height = rho_map.rows();
+            int width = rho_map->cols();
+            int height = rho_map->rows();
 
             int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
             int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
 
-            return rho_map(y, x);  // row = y, col = x
+            return (* rho_map)(y, x);  // row = y, col = x
 
         } else if (rho_map_implicit){
 
@@ -239,15 +239,15 @@ public:
     inline Vector3f getKd(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (kd_map.size() !=0)
+        if (kd_map && kd_map->size() !=0)
         {
-            int width = kd_map.cols();
-            int height = kd_map.rows();
+            int width = kd_map->cols();
+            int height = kd_map->rows();
 
             int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
             int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
 
-            return kd_map(y, x);  // row = y, col = x
+            return (* kd_map)(y, x);  // row = y, col = x
 
         } else if (kd_map_implicit){
 
@@ -264,15 +264,15 @@ public:
     inline Vector3f getKs(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (ks_map.size() !=0)
+        if (ks_map && ks_map->size() !=0)
         {
-            int width = ks_map.cols();
-            int height = ks_map.rows();
+            int width = ks_map->cols();
+            int height = ks_map->rows();
 
             int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
             int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
 
-            return ks_map(y, x);  // row = y, col = x
+            return (* ks_map)(y, x);  // row = y, col = x
 
         } else if (ks_map_implicit){
 
@@ -289,15 +289,15 @@ public:
     inline float getIor(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (ior_map.size() !=0)
+        if (ior_map && ior_map->size() !=0)
         {
-            int width = ior_map.cols();
-            int height = ior_map.rows();
+            int width = ior_map->cols();
+            int height = ior_map->rows();
 
             int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
             int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
 
-            return ior_map(y, x);  // row = y, col = x
+            return (* ior_map)(y, x);  // row = y, col = x
 
         } else if (ior_map_implicit){
 
@@ -314,15 +314,15 @@ public:
     inline float getOpaqueness(Vector2f rho_p_coords) const
     {
         // If explicit function is defined, use it
-        if (opaqueness_map.size() !=0)
+        if (opaqueness_map && opaqueness_map->size() !=0)
         {
-            int width = opaqueness_map.cols();
-            int height = opaqueness_map.rows();
+            int width = opaqueness_map->cols();
+            int height = opaqueness_map->rows();
 
             int x = std::clamp(static_cast<int>(rho_p_coords.x * width), 0, width - 1);
             int y = std::clamp(static_cast<int>((1.0f - rho_p_coords.y) * height), 0, height - 1);
 
-            return opaqueness_map(y, x);  // row = y, col = x
+            return (* opaqueness_map)(y, x);  // row = y, col = x
 
         } else if (opaqueness_map_implicit){
 
@@ -335,11 +335,6 @@ public:
             return 1;
         }
     }
-
-
-
-
-
 };
 
 

@@ -52,7 +52,8 @@ void Renderer::Render(const Scene& scene)
     float imageAspectRatio = scene.width / (float)scene.height;
 
     // The camera is behind the Cornell box which is centered at z = 0
-    Vector3f eye_pos(278, 273, -800);
+    // Vector3f eye_pos(278, 273, -800);
+    Vector3f eye_pos(-121.146, 314.232, -304.957);
 
     // Print out samples per pixel
     std::cout << "SPP: " << scene.spp << "\n";
@@ -134,21 +135,23 @@ void Renderer::Render(const Scene& scene)
                     // The ray direction in the camera space, i.e., originating at (0,0,0) with a direction of (px, py, 1)
                     Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
 
-                    Eigen::Vector3f dir_screen_eigen = Eigen::Vector3f(dir_screen.x, dir_screen.y, dir_screen.z);
-                    float x_rotate = 0.f;
-                    float y_rotate = 0.f;
-                    float z_rotate = 0.f;
+                    Eigen::Vector3f dir_screen_eigen(dir_screen.x, dir_screen.y, dir_screen.z);
+                    float x_rotate = 5.5988f; // Pitch
+                    float y_rotate = 37.5983f; // Yaw
+                    float z_rotate = 0.f; // Roll
 
-                    // Rotate dir_screen by a degrees around the x-axis
-                    Eigen::Matrix3f rotation_matrix;
-                    rotation_matrix = Eigen::AngleAxisf(deg2rad(x_rotate), Eigen::Vector3f(1, 0, 0)).toRotationMatrix();
-                    rotation_matrix *= Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f(0, 1, 0)).toRotationMatrix();
-                    rotation_matrix *= Eigen::AngleAxisf(deg2rad(z_rotate), Eigen::Vector3f(0, 0, 1)).toRotationMatrix();
-                    dir_screen_eigen = rotation_matrix * dir_screen_eigen;
+                    Eigen::Matrix3f yaw = Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f::UnitY()).toRotationMatrix();
+                    // Local-space pitch (applied after yaw)
+                    Eigen::Matrix3f pitch = Eigen::AngleAxisf(deg2rad(x_rotate), Eigen::Vector3f::UnitX()).toRotationMatrix();
+
+                    Eigen::Matrix3f rotation = yaw * pitch;
+
+                    dir_screen_eigen = rotation * dir_screen_eigen;
 
                     dir_screen.x = dir_screen_eigen(0);
                     dir_screen.y = dir_screen_eigen(1);
                     dir_screen.z = dir_screen_eigen(2);
+
 
 
                     // The ray direction in the world space, i.e., originating at (eye_pos) with a direction of (dir)

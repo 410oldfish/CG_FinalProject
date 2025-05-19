@@ -10,6 +10,11 @@
 #include <Eigen/Dense>
 #include "Vector.hpp"  // Assuming Vector3f is defined here as Eigen::Vector3f
 
+#include <filesystem>
+#include <iostream>
+
+namespace fs = std::filesystem;
+
 
 // What does this class do?
 // This class defines a set of global constants and utility functions for a ray tracing application.
@@ -69,64 +74,103 @@ inline void UpdateProgress(float progress)
 };
 
 
-inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrix(const std::string& path)
+inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>* loadImageAsMatrix(
+    std::map<std::string, void *>& opened_images,
+    // Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>
+    const fs::path& texture_path,
+    const fs::path& model_path = "")
 {
-    // Load image in BGR format
-    // ../models
-    // Add the path to the image file
-    path = "../models/" + path;
-    cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
-    std::cout << "Loading image: " << path << std::endl;
+    // Resolve full path
+    fs::path full_path = model_path.empty() ? texture_path : (model_path / texture_path);
+    std::string full_path_str = full_path.string();
+
+    // Check if the image is already loaded
+    auto it = opened_images.find(full_path_str);
+    if (it != opened_images.end()) {
+        auto* mat_ptr = static_cast<Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>*>(it->second);
+        return mat_ptr; // Reuse existing pointer
+    }
+
+    // Load image using OpenCV
+    cv::Mat image = cv::imread(full_path, cv::IMREAD_COLOR);
+    std::cout << "Loading image: " << full_path_str << std::endl;
+
     if (image.empty()) {
-        throw std::runtime_error("Failed to load image at path: " + path);
+        throw std::runtime_error("Failed to load image at path: " + full_path_str);
     }
 
     if (image.channels() != 3 || image.type() != CV_8UC3) {
-        throw std::runtime_error("Image must be 3-channel 8-bit color (CV_8UC3): " + path);
+        throw std::runtime_error("Image must be 3-channel 8-bit color (CV_8UC3): " + full_path_str);
     }
 
     int height = image.rows;
     int width = image.cols;
-    Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic> mat(height, width);
 
-    // Convert BGR [0,255] → RGB [0.0, 1.0]
+    // Allocate matrix on heap
+    auto* mat_ptr = new Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>(height, width);
+
+    // Fill matrix: Convert BGR [0,255] → RGB [0.0, 1.0]
     for (int y = 0; y < height; ++y)
         for (int x = 0; x < width; ++x) {
             const cv::Vec3b& bgr = image.at<cv::Vec3b>(y, x);
-            mat(y, x) = Vector3f(
+            (*mat_ptr)(y, x) = Vector3f(
                 bgr[2] / 255.0f,  // R
                 bgr[1] / 255.0f,  // G
                 bgr[0] / 255.0f   // B
             );
         }
 
-    return mat;
+    // Cache it
+    opened_images[full_path_str] = mat_ptr;
+
+    return mat_ptr;
 }
 
 
-inline Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> loadImageAsMatrixBW(const std::string& path)
+
+inline Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>* loadImageAsMatrixBW(
+    std::map<std::string, void *>& opened_images,
+    const fs::path& texture_path,
+    const fs::path& model_path = "")
 {
-    // Load image in grayscale format
-    path = "../models/" + path;
-    cv::Mat image = cv::imread(path, cv::IMREAD_GRAYSCALE);
+    // Construct full path
+    fs::path full_path = model_path.empty() ? texture_path : (model_path / texture_path);
+    std::string full_path_str = full_path.string();
+
+    // Check if already loaded
+    auto it = opened_images.find(full_path_str);
+    if (it != opened_images.end()) {
+        auto* mat_ptr = static_cast<Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>*>(it->second);
+        return mat_ptr; // Reuse existing pointer
+    }
+
+    // Load grayscale image
+    cv::Mat image = cv::imread(full_path, cv::IMREAD_GRAYSCALE);
+    std::cout << "Loading grayscale image: " << full_path_str << std::endl;
+
     if (image.empty()) {
-        throw std::runtime_error("Failed to load image at path: " + path);
+        throw std::runtime_error("Failed to load image at path: " + full_path_str);
     }
 
     if (image.type() != CV_8UC1) {
-        throw std::runtime_error("Image must be single-channel 8-bit grayscale (CV_8UC1): " + path);
+        throw std::runtime_error("Image must be single-channel 8-bit grayscale (CV_8UC1): " + full_path_str);
     }
 
     int height = image.rows;
     int width = image.cols;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> mat(height, width);
 
-    // Convert [0,255] → [0.0, 1.0]
+    // Allocate matrix on heap
+    auto* mat_ptr = new Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>(height, width);
+
+    // Convert to float in range [0.0, 1.0]
     for (int y = 0; y < height; ++y)
         for (int x = 0; x < width; ++x) {
-            const uchar& gray = image.at<uchar>(y, x);
-            mat(y, x) = gray / 255.0f;
+            uchar gray = image.at<uchar>(y, x);
+            (*mat_ptr)(y, x) = gray / 255.0f;
         }
 
-    return mat;
+    // Cache the loaded matrix
+    opened_images[full_path_str] = mat_ptr;
+
+    return mat_ptr;
 }

@@ -115,7 +115,6 @@ public:
     std::vector<std::unique_ptr<PointLight> > lights; // vector of pointers to lights in the scene
 
 
-
     // ======== NOTE: The following functions are also defined in the Material class !!!! ========
 
 
