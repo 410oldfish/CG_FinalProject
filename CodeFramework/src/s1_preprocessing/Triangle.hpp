@@ -227,6 +227,12 @@ public:
         Vector3f max_vert = Vector3f{-std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity(),
                                      -std::numeric_limits<float>::infinity()};
+        
+        if (loader.LoadedMeshes.empty()){
+            throw std::runtime_error("No meshes loaded from the OBJ file: " + filename);
+            return;
+        }
+
         for (int i = 0; i < loader.LoadedMeshes.size(); i++){
             auto mesh = loader.LoadedMeshes[i];
             m = default_material;

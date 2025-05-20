@@ -52,6 +52,11 @@ void Scene::sampleLight(Intersection &pos, float &pdf) const
     //         }
     //     }
     // }
+    // If no light source is found, throw an error
+    if (light_sources.empty()) {
+        throw std::runtime_error("No light source found in the scene.");
+    }
+
     float emit_area_sum = 0;
     for (const auto& light : light_sources) {
         emit_area_sum += light->getArea();

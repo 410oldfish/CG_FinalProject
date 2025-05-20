@@ -190,8 +190,6 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
 
 
 
-
-
     // ================================== LIGHTS ===============================
 
     Material* lightUpMaterial = new Material();
@@ -199,7 +197,6 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     lightUpMaterial->m_type = EMIT;
     lightUpMaterial->m_emission= 60 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUp.obj", Vector3f(0), lightUpMaterial, loaded_materials, opened_images);
-
 
     Material* lightRightMaterial = new Material();
     loaded_materials.push_back(lightRightMaterial);
@@ -240,9 +237,8 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     sunBigMaterial->m_emission= 200 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> sunBig = std::make_unique<MeshTriangle>("../models/SunBig.obj", Vector3f(0), sunBigMaterial, loaded_materials, opened_images);
 
-
     // =========================== OBJECTS ============================
-
+    
 
     std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room_teto.obj", Vector3f(0), white, loaded_materials, opened_images);
     // std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room_nobody_here.obj", Vector3f(0), white, loaded_materials, opened_images);
@@ -385,7 +381,5 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
 
     // Add the two triangles to the scene
     scene.Add(std::make_unique<MeshTriangle>(verts, vertIndex, 2, st, mfloor));
-
-
 
 }
