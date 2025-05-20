@@ -298,15 +298,6 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials)
     // Diffuse Material, black color (will not be used)
     // std::shared_ptr<Material> mfloor = std::make_shared<Material>(DIFFUSE, Vector3f(0));
 
-
-
-
-
-
-
-
-
-
     // Add the two triangles to the scene
     scene.Add(std::make_unique<MeshTriangle>(verts, vertIndex, 2, st, mfloor));
 

@@ -31,6 +31,9 @@ public:
     Vector2f v1_texture_coords; // the 2D coordinates used to get the pho (colour) value at p2 on the pho texture map
     Vector2f v2_texture_coords; // the 2D coordinates used to get the pho (colour) value at p3 on the pho texture map
 
+    Vector3f v0_normal = Vector3f(0, 0, 0); // the normal at p1
+    Vector3f v1_normal = Vector3f(0, 0, 0); // the normal at p2
+    Vector3f v2_normal = Vector3f(0, 0, 0); // the normal at p3
 
 
     Vector3f v0, v1, v2; // vertices A, B ,C , counter-clockwise order
@@ -294,8 +297,18 @@ public:
                 // Extract the coordinates of the three vertices of the triangle
                 std::array<Vector3f, 3> face_vertices;
                 std::array<Vector2f, 3> rho_texture_coords;
+                std::array<Vector3f,3> face_n;
 
                 for (int j = 0; j < 3; j++) {
+                    auto &lv = mesh.Vertices[i + j];
+
+                    face_n[j] = Vector3f{
+                        lv.Normal.X,
+                        lv.Normal.Y,
+                        lv.Normal.Z
+                    };
+
+
                     auto vert = Vector3f(mesh.Vertices[i + j].Position.X+offset.x,
                                         mesh.Vertices[i + j].Position.Y+offset.y,
                                         mesh.Vertices[i + j].Position.Z+offset.z);
@@ -328,6 +341,10 @@ public:
                 tri->v0_texture_coords=rho_texture_coords[0];
                 tri->v1_texture_coords=rho_texture_coords[1];
                 tri->v2_texture_coords=rho_texture_coords[2];
+
+                tri->v0_normal=face_n[0];
+                tri->v1_normal=face_n[1];
+                tri->v2_normal=face_n[2];
                 
                 triangles.push_back(std::move(tri));
             }
@@ -570,7 +587,13 @@ inline Intersection Triangle::getIntersection(Ray ray)
     inter.happened = true; // intersection happened
     inter.tnear = t; // time from the ray origin to the intersection point
     inter.coords = ray(t); // intersection point
-    inter.normal = this->normal; // normal at the intersection point
+
+    if ((v0_normal + v1_normal + v2_normal).norm() == 0) {
+        inter.normal = normal; // normal of the triangle
+    } else {
+        inter.normal = normalize(v0_normal * (1 - b1 - b2) + v1_normal * b1 + v2_normal * b2); // interpolated normal
+    }
+
     inter.material = this->m; // material of the triangle
     inter.obj = this; // object that was hit
     // Texture coordinates

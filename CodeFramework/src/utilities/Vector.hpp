@@ -108,4 +108,21 @@ inline Vector3f power(const Vector3f &a, float exp)
     );
 }
 
+
+//=====
+
+
+inline Vector2f fract(const Vector2f &v) {
+    return Vector2f(
+        v.x - std::floor(v.x),
+        v.y - std::floor(v.y)
+    );
+}
+
+
+// dot product of two Vector2f
+inline float dot(const Vector2f &a, const Vector2f &b) {
+    return a.x*b.x + a.y*b.y;
+}
+
 #endif //RAYTRACING_VECTOR_H
