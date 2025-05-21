@@ -17,9 +17,10 @@ BVHAccel::BVHAccel(std::vector<std::unique_ptr<Object>> p,
 {
     time_t start, stop;
     time(&start);
-    if (primitives.empty())
+    if (primitives.empty()){
         throw std::runtime_error("No primitives to build BVH from.");
         return;
+    }
 
     // Call the helper and get the root node assigned
     root = recursiveBuild(std::move(primitives), 0);

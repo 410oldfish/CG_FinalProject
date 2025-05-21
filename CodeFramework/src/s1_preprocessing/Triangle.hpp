@@ -246,8 +246,10 @@ public:
                     return Vector3f(material_raw->Kd.X, material_raw->Kd.Y, material_raw->Kd.Z);
                 };
 
+                // kd map = (1 - ks_map) * 0.8
+                // The rest of 0.2 is absorbed by the material
                 m->kd_map_implicit = [material_raw](Vector2f uv) {
-                    return Vector3f(1.f - material_raw->Ks.X, 1.f - material_raw->Ks.Y, 1.f - material_raw->Ks.Z);
+                    return Vector3f((1.f - material_raw->Ks.X) * 0.8f, (1.f - material_raw->Ks.Y) * 0.8f, (1.f - material_raw->Ks.Z) * 0.8f);
                 };
 
                 m->ks_map_implicit = [material_raw](Vector2f uv) {
@@ -258,9 +260,16 @@ public:
                     return material_raw->Ni;
                 };
 
-                m->opaqueness_map_implicit = [material_raw](Vector2f uv) {
-                    return material_raw->d;
-                };
+                // No fully transparent material, if d == 0, we assume it is fully opaque
+                if (material_raw->d == 0.f){
+                    m->opaqueness_map_implicit = [material_raw](Vector2f uv) {
+                        return 1.f;
+                    };
+                } else {
+                    m->opaqueness_map_implicit = [material_raw](Vector2f uv) {
+                        return material_raw->d;
+                    };
+                }
 
                 // If String is not empty, set the texture maps
                 if (!material_raw->map_Kd.empty()){

@@ -54,5 +54,6 @@ int main(int argc, char** argv)
         delete material; // Free the memory allocated for each material
     }
 
+
     return 0;
 }

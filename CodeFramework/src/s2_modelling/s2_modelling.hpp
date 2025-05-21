@@ -18,7 +18,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // // Diffuse Materials
     // Material* pink = new Material();
     // loaded_materials.push_back(pink);
-    // pink->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.72f, 0.48f, 0.56f);};
+    // pink->rho_map_implicit = [](Vector2f uv) {return Vector3f(0.72f, 0.48f, 0.56f);}; // RGB (183, 122, 143)
     // pink->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
     // pink->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
     // pink->ior_map_implicit = [](Vector2f uv) {return 1.46f;};
@@ -195,14 +195,14 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* lightUpMaterial = new Material();
     loaded_materials.push_back(lightUpMaterial);
     lightUpMaterial->m_type = EMIT;
-    lightUpMaterial->m_emission= 60 * Vector3f(1.f, 1.f, 1.f);
+    lightUpMaterial->m_emission= 70 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUp.obj", Vector3f(0), lightUpMaterial, loaded_materials, opened_images);
 
-    Material* lightRightMaterial = new Material();
-    loaded_materials.push_back(lightRightMaterial);
-    lightRightMaterial->m_type = EMIT;
-    lightRightMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
-    std::unique_ptr<MeshTriangle> lightRight = std::make_unique<MeshTriangle>("../models/LightRight.obj", Vector3f(0), lightRightMaterial, loaded_materials, opened_images);
+    // Material* lightRightMaterial = new Material();
+    // loaded_materials.push_back(lightRightMaterial);
+    // lightRightMaterial->m_type = EMIT;
+    // lightRightMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
+    // std::unique_ptr<MeshTriangle> lightRight = std::make_unique<MeshTriangle>("../models/LightRight.obj", Vector3f(0), lightRightMaterial, loaded_materials, opened_images);
     
 
     // Material* lightLeftMaterial = new Material();
@@ -214,21 +214,21 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* lightLampMaterial = new Material();
     loaded_materials.push_back(lightLampMaterial);
     lightLampMaterial->m_type = EMIT;
-    lightLampMaterial->m_emission= 5 * Vector3f(1.f, 1.f, 1.f);
+    lightLampMaterial->m_emission= 200 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightLamp = std::make_unique<MeshTriangle>("../models/LightLamp.obj", Vector3f(0), lightLampMaterial, loaded_materials, opened_images);
 
 
-    Material* sun1Material = new Material();
-    loaded_materials.push_back(sun1Material);
-    sun1Material->m_type = EMIT;
-    sun1Material->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
-    std::unique_ptr<MeshTriangle> sun1 = std::make_unique<MeshTriangle>("../models/Sun1.obj", Vector3f(0), sun1Material, loaded_materials, opened_images);
+    // Material* sun1Material = new Material();
+    // loaded_materials.push_back(sun1Material);
+    // sun1Material->m_type = EMIT;
+    // sun1Material->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
+    // std::unique_ptr<MeshTriangle> sun1 = std::make_unique<MeshTriangle>("../models/Sun1.obj", Vector3f(0), sun1Material, loaded_materials, opened_images);
 
-    Material* sun2Material = new Material();
-    loaded_materials.push_back(sun2Material);
-    sun2Material->m_type = EMIT;
-    sun2Material->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
-    std::unique_ptr<MeshTriangle> sun2 = std::make_unique<MeshTriangle>("../models/Sun2.obj", Vector3f(0), sun2Material, loaded_materials, opened_images);
+    // Material* sun2Material = new Material();
+    // loaded_materials.push_back(sun2Material);
+    // sun2Material->m_type = EMIT;
+    // sun2Material->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
+    // std::unique_ptr<MeshTriangle> sun2 = std::make_unique<MeshTriangle>("../models/Sun2.obj", Vector3f(0), sun2Material, loaded_materials, opened_images);
 
     
     Material* sunBigMaterial = new Material();
@@ -240,17 +240,15 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // =========================== OBJECTS ============================
     
 
-    std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room_teto.obj", Vector3f(0), white, loaded_materials, opened_images);
+    std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room.obj", Vector3f(0), white, loaded_materials, opened_images);
     // std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room_nobody_here.obj", Vector3f(0), white, loaded_materials, opened_images);
 
 
 
     scene.Add(std::move(room));
+
     scene.Add(std::move(lightUp));
-    scene.Add(std::move(sun1));
-    scene.Add(std::move(sun2));
     scene.Add(std::move(sunBig));
-    scene.Add(std::move(lightRight));
     scene.Add(std::move(lightLamp));
 
 
@@ -260,8 +258,8 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // ============================= SPHERES ============================
 
 
-    std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(200, 60, 400), 60, glass);
-    scene.Add(std::move(green_sphere));
+    // std::unique_ptr<Sphere> green_sphere = std::make_unique<Sphere>(Vector3f(200, 60, 400), 60, glass);
+    // scene.Add(std::move(green_sphere));
 
 
 
@@ -344,8 +342,12 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
         uv = uv * 8.0f;
 
         // 2) Colours
-        Vector3f bg = Vector3f(1.0f, 0.9f, 0.95f);  // pale pink background
-        Vector3f fg = Vector3f(1.0f, 0.6f, 0.8f);   // bubblegum-pink dots
+        Vector3f bg = Vector3f(1.0f, 0.9f, 0.95f);  // RGB (255, 237, 227)
+        Vector3f fg = Vector3f(1.0f, 0.6f, 0.8f);   // RGB (255, 163, 196)
+        // bg 237, 227, 208
+        // fg 163, 196, 188
+        // bg = Vector3f(0.847f, 0.768f, 0.631f);
+        // fg = Vector3f(0.366f, 0.552f, 0.503f);
 
         // 3) Find local position inside each cell
         Vector2f f = fract(uv) - Vector2f(0.5f, 0.5f);
@@ -357,7 +359,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     };
 
 
-    mfloor->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.8f, 0.8f, 0.8f);};
+    mfloor->kd_map_implicit = [](Vector2f uv) {return Vector3f(0.64f, 0.64f, 0.64f);};
     mfloor->ks_map_implicit = [](Vector2f uv) {return Vector3f(0.2f, 0.2f, 0.2f);};
     mfloor->ior_map_implicit = [](Vector2f uv) {return 2.f;};
     mfloor->opaqueness_map_implicit = [](Vector2f uv) {return 1.f;}; // fully opaque
