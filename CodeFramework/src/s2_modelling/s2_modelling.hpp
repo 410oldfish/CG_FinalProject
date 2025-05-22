@@ -195,20 +195,20 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* lightUpMaterial = new Material();
     loaded_materials.push_back(lightUpMaterial);
     lightUpMaterial->m_type = EMIT;
-    lightUpMaterial->m_emission= 60 * Vector3f(1.f, 1.f, 1.f);
-    std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUp.obj", Vector3f(0), lightUpMaterial, loaded_materials, opened_images);
+    lightUpMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
+    std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUpTest.obj", Vector3f(0, 0, 0), lightUpMaterial, loaded_materials, opened_images);
 
-    // Material* lightRightMaterial = new Material();
-    // loaded_materials.push_back(lightRightMaterial);
-    // lightRightMaterial->m_type = EMIT;
-    // lightRightMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
-    // std::unique_ptr<MeshTriangle> lightRight = std::make_unique<MeshTriangle>("../models/LightRight.obj", Vector3f(0), lightRightMaterial, loaded_materials, opened_images);
+    Material* lightRightMaterial = new Material();
+    loaded_materials.push_back(lightRightMaterial);
+    lightRightMaterial->m_type = EMIT;
+    lightRightMaterial->m_emission= 5 * Vector3f(1.f, 1.f, 1.f);
+    std::unique_ptr<MeshTriangle> lightRight = std::make_unique<MeshTriangle>("../models/LightRight.obj", Vector3f(0), lightRightMaterial, loaded_materials, opened_images);
     
 
     Material* lightLeftMaterial = new Material();
     loaded_materials.push_back(lightLeftMaterial);
     lightLeftMaterial->m_type = EMIT;
-    lightLeftMaterial->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
+    lightLeftMaterial->m_emission= 5 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightLeft = std::make_unique<MeshTriangle>("../models/LightLeft.obj", Vector3f(0), lightLeftMaterial, loaded_materials, opened_images);
 
 
@@ -255,6 +255,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // scene.Add(std::move(lightLamp));
     scene.Add(std::move(lightLamp));
     // scene.Add(std::move(lightLeft));
+    // scene.Add(std::move(lightRight));
 
 
 
