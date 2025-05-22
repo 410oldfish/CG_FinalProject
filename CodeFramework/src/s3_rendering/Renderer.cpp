@@ -52,8 +52,17 @@ void Renderer::Render(const Scene& scene)
     float imageAspectRatio = scene.width / (float)scene.height;
 
     // The camera is behind the Cornell box which is centered at z = 0
-    // Vector3f eye_pos(278, 273, -800);
-    Vector3f eye_pos(-121.146, 314.232, -304.957);
+
+    // Square
+    // Vector3f eye_pos(-121.146, 314.232, -304.957);
+
+    // Face 
+    // Vector3f eye_pos(142.57, 330.85, 179.58);
+
+    // 4:3
+    Vector3f eye_pos(-103.16, 314.232, -304.957);
+
+    // Vector3f eye_pos(363.84, 98.752, 83.023);
 
     // Print out samples per pixel
     std::cout << "SPP: " << scene.spp << "\n";
@@ -136,9 +145,19 @@ void Renderer::Render(const Scene& scene)
                     Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
 
                     Eigen::Vector3f dir_screen_eigen(dir_screen.x, dir_screen.y, dir_screen.z);
+
+                    // Square
                     float x_rotate = 5.5988f; // Pitch
                     float y_rotate = 37.5983f; // Yaw
                     float z_rotate = 0.f; // Roll
+
+                    // Face
+                    // x_rotate = 5.5988f; // Pitch
+                    // y_rotate = 25.598f; // Yaw
+                    // z_rotate = 0.f; // Roll
+
+                    // 4:3
+                    y_rotate = 33.5984f; // Yaw
 
                     Eigen::Matrix3f yaw = Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f::UnitY()).toRotationMatrix();
                     // Local-space pitch (applied after yaw)

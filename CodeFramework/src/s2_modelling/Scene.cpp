@@ -176,10 +176,10 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         // ============================== [P2.1: DIFFUSE, SPECULAR, OR ABSORPTION ?] ==============================
 
         // Determine whether we has hit the front or back side of the object
-        // if (dotProduct(dir_view_to_hit, normal_hit) > 0){
-        //     normal_hit = -normal_hit; // flip the normal
-        //     std::cout << "Warning: Light hit the back side of " << inter.obj->name << "and it is opque." << std::endl;
-        // }
+        if (dotProduct(dir_view_to_hit, normal_hit) > 0){
+            normal_hit = -normal_hit; // flip the normal
+            // std::cout << "Warning: Light hit the back side of " << inter.obj->name << "and it is opque." << std::endl;
+        }
         Vector3f point_hit_above = point_hit + normal_hit * EPSILON; // hit point above the surface
 
  

@@ -195,7 +195,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* lightUpMaterial = new Material();
     loaded_materials.push_back(lightUpMaterial);
     lightUpMaterial->m_type = EMIT;
-    lightUpMaterial->m_emission= 70 * Vector3f(1.f, 1.f, 1.f);
+    lightUpMaterial->m_emission= 60 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUp.obj", Vector3f(0), lightUpMaterial, loaded_materials, opened_images);
 
     // Material* lightRightMaterial = new Material();
@@ -205,17 +205,20 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // std::unique_ptr<MeshTriangle> lightRight = std::make_unique<MeshTriangle>("../models/LightRight.obj", Vector3f(0), lightRightMaterial, loaded_materials, opened_images);
     
 
-    // Material* lightLeftMaterial = new Material();
-    // loaded_materials.push_back(lightLeftMaterial);
-    // lightLeftMaterial->m_type = EMIT;
-    // lightLeftMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
-    // std::unique_ptr<MeshTriangle> lightLeft = std::make_unique<MeshTriangle>("../models/LightLeft.obj", Vector3f(0), lightLeftMaterial, loaded_materials, opened_images);
+    Material* lightLeftMaterial = new Material();
+    loaded_materials.push_back(lightLeftMaterial);
+    lightLeftMaterial->m_type = EMIT;
+    lightLeftMaterial->m_emission= 30 * Vector3f(1.f, 1.f, 1.f);
+    std::unique_ptr<MeshTriangle> lightLeft = std::make_unique<MeshTriangle>("../models/LightLeft.obj", Vector3f(0), lightLeftMaterial, loaded_materials, opened_images);
+
 
     Material* lightLampMaterial = new Material();
     loaded_materials.push_back(lightLampMaterial);
     lightLampMaterial->m_type = EMIT;
-    lightLampMaterial->m_emission= 200 * Vector3f(1.f, 1.f, 1.f);
-    std::unique_ptr<MeshTriangle> lightLamp = std::make_unique<MeshTriangle>("../models/LightLamp.obj", Vector3f(0), lightLampMaterial, loaded_materials, opened_images);
+    lightLampMaterial->m_emission= 200 * Vector3f(1.00f, 0.98f, 0.94f);
+    // std::unique_ptr<MeshTriangle> lightLamp = std::make_unique<MeshTriangle>("../models/LightLamp.obj", Vector3f(0), lightLampMaterial, loaded_materials, opened_images);
+    std::unique_ptr<Sphere> lightLamp = std::make_unique<Sphere>(Vector3f(464.369f, 244.115f, 206.143f), 5, lightLampMaterial);
+
 
 
     // Material* sun1Material = new Material();
@@ -234,7 +237,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* sunBigMaterial = new Material();
     loaded_materials.push_back(sunBigMaterial);
     sunBigMaterial->m_type = EMIT;
-    sunBigMaterial->m_emission= 200 * Vector3f(1.f, 1.f, 1.f);
+    sunBigMaterial->m_emission= 100 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> sunBig = std::make_unique<MeshTriangle>("../models/SunBig.obj", Vector3f(0), sunBigMaterial, loaded_materials, opened_images);
 
     // =========================== OBJECTS ============================
@@ -248,8 +251,10 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     scene.Add(std::move(room));
 
     scene.Add(std::move(lightUp));
-    scene.Add(std::move(sunBig));
+    // scene.Add(std::move(sunBig));
+    // scene.Add(std::move(lightLamp));
     scene.Add(std::move(lightLamp));
+    // scene.Add(std::move(lightLeft));
 
 
 
@@ -369,7 +374,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
 
     // Build the floor manually
     // Define the 4 vertices of a large rectangle floor plane, lower left corner at (0,0,0), 550x560
-    Vector3f verts[4] = {{0,3,0}, {552.8,3,0}, {549.6, 3,559.2}, {0,3,559.2}};
+    Vector3f verts[4] = {{0,3,0}, {564,3,0}, {564, 3,559.2}, {0,3,559.2}};
     // Define texture coordinates for the 4 vertices
     Vector2f st[4] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
     // Define the 6 indices for the two triangles that make up the rectangle
