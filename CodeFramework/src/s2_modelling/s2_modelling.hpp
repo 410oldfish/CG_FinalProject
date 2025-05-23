@@ -195,7 +195,7 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     Material* lightUpMaterial = new Material();
     loaded_materials.push_back(lightUpMaterial);
     lightUpMaterial->m_type = EMIT;
-    lightUpMaterial->m_emission= 10 * Vector3f(1.f, 1.f, 1.f);
+    lightUpMaterial->m_emission= 15 * Vector3f(1.f, 1.f, 1.f);
     std::unique_ptr<MeshTriangle> lightUp = std::make_unique<MeshTriangle>("../models/LightUpTest.obj", Vector3f(0, 0, 0), lightUpMaterial, loaded_materials, opened_images);
 
     Material* lightRightMaterial = new Material();
