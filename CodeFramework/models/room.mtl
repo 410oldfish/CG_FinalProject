@@ -1,16 +1,6 @@
 # Blender 4.3.2 MTL File: 'room.blend'
 # www.blender.org
 
-newmtl 01___Default
-Ns 10.000005
-Ka 1.000000 1.000000 1.000000
-Ks 1.000000 1.000000 1.000000
-Ke 0.000000 0.000000 0.000000
-Ni 100.000000
-d 1.000000
-illum 2
-map_Kd mirror/TXTMirror/MapFlatMirror.png
-
 newmtl 02___Default
 Ns 49.000000
 Ka 1.000000 1.000000 1.000000
@@ -249,6 +239,26 @@ Kd 0.050000 0.050000 0.050000
 Ks 0.800000 0.800000 0.800000
 Ke 0.000000 0.000000 0.000000
 Ni 3.000000
+d 1.000000
+illum 2
+
+newmtl Mdl_0_Mtl_test_test_test_lambert2
+Ns 159.999985
+Ka 1.000000 1.000000 1.000000
+Ks 0.100000 0.100000 0.100000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd hatsune-miku-figure/textures/Image_0.png
+
+newmtl MirrorGlass
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 100.000000
 d 1.000000
 illum 2
 
