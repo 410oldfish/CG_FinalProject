@@ -34,9 +34,9 @@ public:
     // @param object: pointer to the object to be added
     // void Add(Object *object) { objects.push_back(object); }
     void Add(std::unique_ptr<Object> object) {
-    if (object->hasEmit()) {
-        light_sources.push_back(object.get());
-    }
+    // if (object->hasEmit()) {
+    //     light_sources.push_back(object.get());
+    // }
     objects.push_back(std::move(object));
 }
 
@@ -111,6 +111,7 @@ public:
     std::vector<std::unique_ptr<Object>> objects; // vector of pointers to objects in the scene
 
     std::vector<Object*> light_sources; // they are the objects copied from the objects vector
+    std::vector<float> light_source_weights; // weights for each light source, used for sampling
 
     std::vector<std::unique_ptr<PointLight> > lights; // vector of pointers to lights in the scene
 

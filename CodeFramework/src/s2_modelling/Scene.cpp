@@ -26,78 +26,76 @@ Intersection Scene::intersect(const Ray &ray) const
 // Randomly samples a point on one of the emissive objects (area lights) in the scene, proportionally to surface area
 // @param pos (output): intersection point
 // @param pdf (output): probability density function of the sampling
+// void Scene::sampleLight(Intersection &pos, float &pdf) const
+// {   
+//     // If no light source is found, throw an error
+//     if (light_sources.empty()) {
+//         throw std::runtime_error("No light source found in the scene.");
+//     }
+
+//     float emit_area_sum = 0;
+//     for (const auto& light : light_sources) {
+//         emit_area_sum += light->getArea();
+//     }
+//     float emit_area_sum_original = emit_area_sum; // Save the original area sum for normalization
+//     float p = get_random_float() * emit_area_sum;
+
+//     for (const auto& light : light_sources) {
+//         float area = light->getArea();
+//         if (p <= emit_area_sum + area) {
+//             light->Sample(pos, pdf); // This gives: pdf_obj = 1 / area
+//             pdf = pdf * (area / emit_area_sum_original); // Normalize to global PDF
+//             return;
+//         }
+//         emit_area_sum += area;
+//     }
+// }
+
+
 void Scene::sampleLight(Intersection &pos, float &pdf) const
-{   
-    // Compute the total surface area of all emissive objects
-    // float emit_area_sum = 0;
-    // for (uint32_t k = 0; k < light_sources.size(); ++k) {
-    //     if (true){
-    //         pos.happened=true;  // area light that has emission exists
-    //         emit_area_sum += light_sources[k]->getArea();
-    //     }
-    // }
-
-    // // Get a random number between 0 and the total surface area
-    // float p = get_random_float() * emit_area_sum;
-
-    // // Fine the object that corresponds to the random number
-    // emit_area_sum = 0;
-    // for (uint32_t k = 0; k < light_sources.size(); ++k) {
-    //     if (true){
-    //         emit_area_sum += light_sources[k]->getArea();
-    //         if (p <= emit_area_sum){
-    //             light_sources[k]->Sample(pos, pdf);
-    //             pdf = pdf * (light_sources[k]->getArea() / emit_area_sum); // pdf is the pdf of a single light source
-    //             break;
-    //         }
-    //     }
-    // }
-    // If no light source is found, throw an error
+{
     if (light_sources.empty()) {
         throw std::runtime_error("No light source found in the scene.");
     }
 
-    float emit_area_sum = 0;
-    for (const auto& light : light_sources) {
-        emit_area_sum += light->getArea();
+    // Sanity check
+    if (light_sources.size() != light_source_weights.size()) {
+        throw std::runtime_error("Mismatch between light sources and weights.");
     }
-    float emit_area_sum_original = emit_area_sum; // Save the original area sum for normalization
-    float p = get_random_float() * emit_area_sum;
 
-    for (const auto& light : light_sources) {
-        float area = light->getArea();
-        if (p <= emit_area_sum + area) {
-            light->Sample(pos, pdf); // This gives: pdf_obj = 1 / area
-            pdf = pdf * (area / emit_area_sum_original); // Normalize to global PDF
+    // 1. Compute total weight
+    float total_weight = 0.0f;
+    for (float w : light_source_weights) {
+        total_weight += w;
+    }
+
+    if (total_weight <= 0.0f) {
+        throw std::runtime_error("Total light sampling weight must be > 0.");
+    }
+
+    // 2. Sample a light index using inverse transform sampling
+    float p = get_random_float() * total_weight;
+    float cumulative = 0.0f;
+    for (size_t i = 0; i < light_sources.size(); ++i) {
+        cumulative += light_source_weights[i];
+        if (p <= cumulative) {
+            const auto& light = light_sources[i];
+            float pdf_local;
+            light->Sample(pos, pdf_local); // pdf_local = 1 / light->getArea(), area domain
+
+            // 3. Compute total global PDF
+            float p_light = light_source_weights[i] / total_weight;  // weight-based light selection
+            pdf = pdf_local * p_light; // Final PDF: light selection * sampling on surface
             return;
         }
-        emit_area_sum += area;
     }
+
+    // Should never reach here unless there's floating-point rounding error
+    light_sources.back()->Sample(pos, pdf); // fallback
+    pdf *= light_source_weights.back() / total_weight;
 }
 
 
-
-
-
-
-// !!!! Main Path Tracing Function !!!!
-// Cast a ray into the scene and return the color at the intersection point
-// @param ray: ray to be cast (from camera or a bounce ray)
-// @param depth: current recursion depth (for limiting recursion)
-// @return: color at the intersection point
-// Ideas:
-// - Check Intersection
-// - Handle emission, diffuse, and glass materials
-// - Handle area light sampling
-// !!!! Main Path Tracing Function !!!!
-// Cast a ray into the scene and return the color at the intersection point
-// @param ray: ray to be cast (from camera or a bounce ray)
-// @param depth: current recursion depth (for limiting recursion)
-// @return: color at the intersection point
-// Ideas:
-// - Check Intersection
-// - Handle emission, diffuse, and glass materials
-// - Handle area light sampling
 
 
 
@@ -306,29 +304,6 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         Vector3f &rho
     ) const {
 
-    // 5. Sample a direction from the hit point to a potential source point [!! Return !!]
-    Vector3f dir_hit_to_source = inter.material->sample(dir_hit_to_view, normal_hit); // sample a random direction over the hemisphere
-    float pdf_dir_hit_to_source = inter.material->pdf(dir_view_to_hit, dir_hit_to_source, normal_hit); // pdf of the sampled direction
-    // Define a very small local EPSILON
-    if (pdf_dir_hit_to_source <= 0) {
-        std::cout << "Mesh Name: " << inter.obj->name << std::endl;
-        std::cout << "Indirect Light ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
-        pdf_dir_hit_to_source = SMALL_EPSILON;
-    }
-    
-    // 6. Recursively compute the radiance from a source point to the hit point
-    Ray ray_hit_to_source(point_hit_above, dir_hit_to_source); // create a ray from the hit point to the light source
-    Vector3f radiance_source_to_hit = castRay(ray_hit_to_source, depth + 1, true); // recursively cast a ray to the light source
-
-    // 7. Evaluate BRDF
-    Vector3f brdf_value = rho / M_PI; // Lambertian BRDF = rho / PI
-
-    // 8. Cosine Factor
-    float cos_theta = std::max(0.f, dotProduct(normal_hit, dir_hit_to_source)); // angle between light normal and light emission direction
-
-    // 9. Compute indirect radiance
-    Vector3f radiance_indirect = radiance_source_to_hit * brdf_value * cos_theta / pdf_dir_hit_to_source;
-
     // ===================================== DIRECT ====================================
 
     Vector3f radiance_direct = Vector3f(0); // radiance of the light source
@@ -369,6 +344,34 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         
         radiance_direct =  radiance_light * brdf * cos_i * cos_l / len_hit_to_light_squared / pdf_light;
     }
+
+    bool has_obtained_NEE_bonus = !blocker.happened;
+
+    // =================================== INDIRECT ====================================
+
+    // 5. Sample a direction from the hit point to a potential source point [!! Return !!]
+    Vector3f dir_hit_to_source = inter.material->sample(dir_hit_to_view, normal_hit); // sample a random direction over the hemisphere
+    float pdf_dir_hit_to_source = inter.material->pdf(dir_view_to_hit, dir_hit_to_source, normal_hit); // pdf of the sampled direction
+    // Define a very small local EPSILON
+    if (pdf_dir_hit_to_source <= 0) {
+        std::cout << "Mesh Name: " << inter.obj->name << std::endl;
+        std::cout << "Indirect Light ERROR: pdf <= 0, Clamping to SMALL_EPSILON" << std::endl;
+        pdf_dir_hit_to_source = SMALL_EPSILON;
+    }
+    
+    // 6. Recursively compute the radiance from a source point to the hit point
+    Ray ray_hit_to_source(point_hit_above, dir_hit_to_source); // create a ray from the hit point to the light source
+    Vector3f radiance_source_to_hit = castRay(ray_hit_to_source, depth + 1, true); // recursively cast a ray to the light source
+
+    // 7. Evaluate BRDF
+    Vector3f brdf_value = rho / M_PI; // Lambertian BRDF = rho / PI
+
+    // 8. Cosine Factor
+    float cos_theta = std::max(0.f, dotProduct(normal_hit, dir_hit_to_source)); // angle between light normal and light emission direction
+
+    // 9. Compute indirect radiance
+    Vector3f radiance_indirect = radiance_source_to_hit * brdf_value * cos_theta / pdf_dir_hit_to_source;
+
 
     // ================================== COMBINE ==================================
 

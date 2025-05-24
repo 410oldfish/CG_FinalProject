@@ -62,6 +62,10 @@ void Renderer::Render(const Scene& scene)
     // 4:3
     Vector3f eye_pos(-103.16, 314.232, -304.957);
 
+    // Table
+    // Vector3f eye_pos(224.862, 242.765, -67.9895);
+
+    // Shoes
     // Vector3f eye_pos(363.84, 98.752, 83.023);
 
     // Print out samples per pixel

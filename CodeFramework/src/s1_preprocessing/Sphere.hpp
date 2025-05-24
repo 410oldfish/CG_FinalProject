@@ -41,8 +41,8 @@ public:
         if (!solveQuadratic(a, b, c, t0, t1)) return result;
         if (t0 < 0) t0 = t1;
         if (t0 < 0) return result;
-        result.happened=true;
 
+        result.happened=true;
         result.coords = Vector3f(ray.origin + ray.direction * t0);
         result.normal = normalize(Vector3f(result.coords - center));
         result.material = this->m;
@@ -73,22 +73,43 @@ public:
     }
 
     // Sample a point on the sphere
-    void Sample(Intersection &pos, float &pdf){
-        // Question: Is this sampling uniform?
+    // void Sample(Intersection &pos, float &pdf){
+    //     // Question: Is this sampling uniform?
 
-        // theta = [0, 2pi) azimuthal angle
-        // phi = [0, pi) polar angle
-        float theta = 2.0 * M_PI * get_random_float(), phi = M_PI * get_random_float();
+    //     // theta = [0, 2pi) azimuthal angle
+    //     // phi = [0, pi) polar angle
+    //     float theta = 2.0 * M_PI * get_random_float(), phi = M_PI * get_random_float();
 
-        // From spherical coordinates to Cartesian coordinates
-        Vector3f dir(std::cos(phi), std::sin(phi)*std::cos(theta), std::sin(phi)*std::sin(theta));
+    //     // From spherical coordinates to Cartesian coordinates
+    //     Vector3f dir(std::cos(phi), std::sin(phi)*std::cos(theta), std::sin(phi)*std::sin(theta));
 
-        // Put values into the Intersection object
-        pos.coords = center + radius * dir; // absolute position
-        pos.normal = dir; // normal at the intersection point
-        pos.obj = this; // object that was hit
-        pos.material=m; // material of the object
-        pdf = 1.0f / area; // probability density function
+    //     // Put values into the Intersection object
+    //     pos.coords = center + radius * dir; // absolute position
+    //     pos.normal = dir; // normal at the intersection point
+    //     pos.obj = this; // object that was hit
+    //     pos.material=m; // material of the object
+    //     pdf = 1.0f / area; // probability density function
+    // }
+
+
+    void Sample(Intersection &pos, float &pdf) {
+        float u = get_random_float();
+        float v = get_random_float();
+        float theta = 2.0f * M_PI * u;
+        float phi = std::acos(1.0f - 2.0f * v);
+
+        float x = std::sin(phi) * std::cos(theta);
+        float y = std::sin(phi) * std::sin(theta);
+        float z = std::cos(phi);
+
+        Vector3f dir(x, y, z);
+
+        pos.coords = center + radius * dir;
+        pos.normal = dir;
+        pos.obj = this;
+        pos.material = m;
+
+        pdf = 1.0f / area; // still correct: area-uniform
     }
 
 

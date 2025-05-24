@@ -325,14 +325,14 @@ map_Kd skybox/skybox-light-blue-sky-3d-model-bad93c2d7f.jpg
 
 newmtl TableWood
 Ka 1.000000 1.000000 1.000000
-Ks 0.040000 0.040000 0.040000
+Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.500000
+d 1.000000
 illum 2
 map_Kd table/Table_BaseColor.png
 map_Ns table/Table_Roughness.png
 map_refl table/Table_Metallic.png
-map_d table/Table_Normal.png
 map_Bump -bm 1.000000 table/Table_Normal.png
 
 newmtl WallBackTexture

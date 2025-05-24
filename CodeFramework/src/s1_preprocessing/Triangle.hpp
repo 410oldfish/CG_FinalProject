@@ -617,6 +617,9 @@ inline Intersection Triangle::getIntersection(Ray ray)
 }
 
 
+
+
+
 inline Vector3f Triangle::evalDiffuseColor(const Vector2f& barry_centric_coords) const
 {
     // Interpolate the texture coordinates using Barycentric coordinates
