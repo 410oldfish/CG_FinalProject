@@ -1,14 +1,13 @@
 bob-the-duck: Lab 4
-bunny: ???
 cannon: ???
 cornellbox: Lab 4
-flute: ???
+flute: https://sketchfab.com/3d-models/basic-flute-8eb90edf4b6a44e8a400bfd565b37483
 water glass: ???
-lamp: ???
+lamp: https://sketchfab.com/3d-models/office-lamp-d934c6b791c34e0fafc30e9625b4c55c
 Mac: ???
-plant: ???
-rabbit: ???
+plant: https://sketchfab.com/3d-models/indoor-plant-d984fcd54d014ef093d16cbd25d3c3bb
+rabbit: https://sketchfab.com/3d-models/glass-bunny-caeb681795a54c6eb0bf120582fe7f45
 Rin Nightgown: https://www.deviantart.com/mskittygemma/art/MMD-Rin-Nightgown-DL-in-desc-820510072
 Skybox: https://www.cgtrader.com/free-3d-models/exterior/cityscape/skybox-light-blue-sky
-table: ???
-window: ???
+table: https://sketchfab.com/3d-models/office-table-2e298de5176540f8bdf5633842604806
+window: https://free3d.com/3d-model/window-component-50401.html
