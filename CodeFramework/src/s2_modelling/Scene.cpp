@@ -26,80 +26,80 @@ Intersection Scene::intersect(const Ray &ray) const
 // Randomly samples a point on one of the emissive objects (area lights) in the scene, proportionally to surface area
 // @param pos (output): intersection point
 // @param pdf (output): probability density function of the sampling
-// void Scene::sampleLight(Intersection &pos, float &pdf) const
-// {   
-//     // If no light source is found, throw an error
-//     if (light_sources.empty()) {
-//         throw std::runtime_error("No light source found in the scene.");
-//     }
-
-//     float emit_area_sum = 0;
-//     for (const auto& light : light_sources) {
-//         emit_area_sum += light->getArea();
-//     }
-//     float emit_area_sum_original = emit_area_sum; // Save the original area sum for normalization
-//     float p = get_random_float() * emit_area_sum;
-
-//     for (const auto& light : light_sources) {
-//         float area = light->getArea();
-//         if (p <= emit_area_sum + area) {
-//             light->Sample(pos, pdf); // This gives: pdf_obj = 1 / area
-//             pdf = pdf * (area / emit_area_sum_original); // Normalize to global PDF
-//             return;
-//         }
-//         emit_area_sum += area;
-//     }
-// }
-
-
 void Scene::sampleLight(Intersection &pos, float &pdf) const
-{
+{   
+    // If no light source is found, throw an error
     if (light_sources.empty()) {
         throw std::runtime_error("No light source found in the scene.");
     }
 
-    // Sanity check
-    if (light_sources.size() != light_source_weights.size()) {
-        throw std::runtime_error("Mismatch between light sources and weights.");
+    float emit_area_sum = 0;
+    for (const auto& light : light_sources) {
+        emit_area_sum += light->getArea();
     }
+    float emit_area_sum_original = emit_area_sum; // Save the original area sum for normalization
+    float p = get_random_float() * emit_area_sum;
 
-    // 1. Compute total weight
-    float total_weight = 0.0f;
-    for (float w : light_source_weights) {
-        total_weight += w;
-    }
-
-    if (total_weight <= 0.0f) {
-        throw std::runtime_error("Total light sampling weight must be > 0.");
-    }
-
-    // 2. Sample a light index using inverse transform sampling
-    float p = get_random_float() * total_weight;
-    float cumulative = 0.0f;
-    for (size_t i = 0; i < light_sources.size(); ++i) {
-        cumulative += light_source_weights[i];
-        if (p <= cumulative) {
-            const auto& light = light_sources[i];
-            float pdf_local;
-            light->Sample(pos, pdf_local); // pdf_local = 1 / light->getArea(), area domain
-
-            // 3. Compute total global PDF
-            float p_light = light_source_weights[i] / total_weight;  // weight-based light selection
-            pdf = pdf_local * p_light; // Final PDF: light selection * sampling on surface
+    for (const auto& light : light_sources) {
+        float area = light->getArea();
+        if (p <= emit_area_sum + area) {
+            light->Sample(pos, pdf); // This gives: pdf_obj = 1 / area
+            pdf = pdf * (area / emit_area_sum_original); // Normalize to global PDF
             return;
         }
+        emit_area_sum += area;
     }
-
-    // Should never reach here unless there's floating-point rounding error
-    light_sources.back()->Sample(pos, pdf); // fallback
-    pdf *= light_source_weights.back() / total_weight;
 }
 
 
+// void Scene::sampleLight(Intersection &pos, float &pdf) const
+// {
+//     if (light_sources.empty()) {
+//         throw std::runtime_error("No light source found in the scene.");
+//     }
+
+//     // Sanity check
+//     if (light_sources.size() != light_source_weights.size()) {
+//         throw std::runtime_error("Mismatch between light sources and weights.");
+//     }
+
+//     // 1. Compute total weight
+//     float total_weight = 0.0f;
+//     for (float w : light_source_weights) {
+//         total_weight += w;
+//     }
+
+//     if (total_weight <= 0.0f) {
+//         throw std::runtime_error("Total light sampling weight must be > 0.");
+//     }
+
+//     // 2. Sample a light index using inverse transform sampling
+//     float p = get_random_float() * total_weight;
+//     float cumulative = 0.0f;
+//     for (size_t i = 0; i < light_sources.size(); ++i) {
+//         cumulative += light_source_weights[i];
+//         if (p <= cumulative) {
+//             const auto& light = light_sources[i];
+//             float pdf_local;
+//             light->Sample(pos, pdf_local); // pdf_local = 1 / light->getArea(), area domain
+
+//             // 3. Compute total global PDF
+//             float p_light = light_source_weights[i] / total_weight;  // weight-based light selection
+//             pdf = pdf_local * p_light; // Final PDF: light selection * sampling on surface
+//             return;
+//         }
+//     }
+
+//     // Should never reach here unless there's floating-point rounding error
+//     light_sources.back()->Sample(pos, pdf); // fallback
+//     pdf *= light_source_weights.back() / total_weight;
+// }
 
 
 
-Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_previously) const
+
+
+Vector3f Scene::castRay(const Ray &ray, int depth, bool got_NEE_bonus_before) const
 {   
     // 1. Depth Check [!! Return !!]
     const int maxDepth = 128;
@@ -121,7 +121,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
 
     // 4. Evaluate Direct Light [!! Return !!]
     if (inter.material->m_type == EMIT) {
-        if (has_evaluated_diffuse_previously){
+        if (got_NEE_bonus_before){
             return Vector3f(0);
         } else {
             Vector3f radiance_emit = inter.material->getEmission(); // emission color of the object
@@ -200,7 +200,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
         if (is_diffuse){
             return castRayDiffuse(ray, 
                 depth + 1, 
-                has_evaluated_diffuse_previously, 
+                got_NEE_bonus_before, 
                 inter, 
                 point_hit, 
                 normal_hit, 
@@ -225,14 +225,14 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
             if (get_random_float() < reflect_weight){
                 Vector3f Rl = reflect(I, normal_hit);
                 Ray ray_hit_to_source(point_hit + offset, Rl);
-                Vector3f radiance_reflect = castRay(ray_hit_to_source, depth + 1, has_evaluated_diffuse_previously); // * reflect_weight * opaque_weight * reflect_weight
+                Vector3f radiance_reflect = castRay(ray_hit_to_source, depth + 1, got_NEE_bonus_before); // * reflect_weight * opaque_weight * reflect_weight
                 radiance_reflect = radiance_reflect / RussianRoulette; // -- / reflect_weight / opaque_weight / reflect_weight (cancelled out!!!)
                 return radiance_reflect;
 
             } else {
                 return castRayDiffuse(ray, 
                     depth + 1, 
-                    has_evaluated_diffuse_previously, 
+                    got_NEE_bonus_before, 
                     inter, 
                     point_hit, 
                     normal_hit, 
@@ -269,7 +269,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
             Vector3f Rl = reflect(I, normal_hit);
             offset = normal_hit * EPSILON; // slightly above the surface
             Ray ray_hit_to_source(point_hit + offset, Rl);
-            Vector3f radiance_reflect = castRay(ray_hit_to_source, depth + 1, has_evaluated_diffuse_previously); // * reflect_weight * transparent_weight
+            Vector3f radiance_reflect = castRay(ray_hit_to_source, depth + 1, got_NEE_bonus_before); // * reflect_weight * transparent_weight
             radiance_reflect = radiance_reflect / RussianRoulette; // -- / reflect_weight / transparent_weight (cancelled out!!!)
             return radiance_reflect ;
 
@@ -281,7 +281,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
                 offset = normal_hit * EPSILON; // The ray is inside and exiting the surface
 
             Ray ray_hit_to_source(point_hit + offset, Rr);
-            Vector3f radiance_refract = castRay(ray_hit_to_source, depth + 1, has_evaluated_diffuse_previously); // * refract_weight * transparent_weight
+            Vector3f radiance_refract = castRay(ray_hit_to_source, depth + 1, got_NEE_bonus_before); // * refract_weight * transparent_weight
             radiance_refract = radiance_refract / RussianRoulette; // -- / refract_weight / transparent_weight (cancelled out!!!)
             return radiance_refract;
         }
@@ -293,7 +293,7 @@ Vector3f Scene::castRay(const Ray &ray, int depth, bool has_evaluated_diffuse_pr
 }
 
 
-inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_diffuse_previously, 
+inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool got_NEE_bonus_before, 
         Intersection &inter, 
         Vector3f &point_hit,
         Vector3f &normal_hit,
@@ -345,7 +345,7 @@ inline Vector3f Scene::castRayDiffuse(Ray ray, int depth, bool has_evaluated_dif
         radiance_direct =  radiance_light * brdf * cos_i * cos_l / len_hit_to_light_squared / pdf_light;
     }
 
-    bool has_obtained_NEE_bonus = !blocker.happened;
+    bool get_NEE_bonus_now = !blocker.happened;
 
     // =================================== INDIRECT ====================================
 
