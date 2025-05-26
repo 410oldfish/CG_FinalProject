@@ -18,6 +18,22 @@
     #include <omp.h>
 #endif
 
+
+const Vector3f eye_pos(-103.16, 314.232, -304.957);
+
+
+const float x_rotate = 5.5988f; // Pitch
+const float y_rotate = 33.5984f; // Yaw
+const float z_rotate = 0.f; // Roll
+
+
+// =============================================================================
+//
+// The above is everything you need to change the camera setting.
+//
+// =============================================================================
+
+
 // #ifndef SOURCE_DIR
 //     #define SOURCE_DIR "."  // fallback (for editor, optional)
 // #endif
@@ -60,7 +76,7 @@ void Renderer::Render(const Scene& scene)
     // Vector3f eye_pos(142.57, 330.85, 179.58);
 
     // 4:3
-    Vector3f eye_pos(-103.16, 314.232, -304.957);
+    // Vector3f eye_pos(-103.16, 314.232, -304.957);
 
     // Table
     // Vector3f eye_pos(224.862, 242.765, -67.9895);
@@ -151,17 +167,12 @@ void Renderer::Render(const Scene& scene)
                     Eigen::Vector3f dir_screen_eigen(dir_screen.x, dir_screen.y, dir_screen.z);
 
                     // Square
-                    float x_rotate = 5.5988f; // Pitch
-                    float y_rotate = 37.5983f; // Yaw
-                    float z_rotate = 0.f; // Roll
 
                     // Face
                     // x_rotate = 5.5988f; // Pitch
                     // y_rotate = 25.598f; // Yaw
                     // z_rotate = 0.f; // Roll
 
-                    // 4:3
-                    y_rotate = 33.5984f; // Yaw
 
                     Eigen::Matrix3f yaw = Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f::UnitY()).toRotationMatrix();
                     // Local-space pitch (applied after yaw)
