@@ -1,4 +1,4 @@
-# Computer Graph Final Project
+# Computer Graphics Final Project
 
 Members:
 
