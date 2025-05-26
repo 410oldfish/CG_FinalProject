@@ -38,7 +38,7 @@ If you want to load an `.obj` light source, the same approach applies. Additiona
 ## 5. How to Read the Code?
 
 - Start with [`/src/main.cpp`](/src/main.cpp)
-- Then follow the pipeline stage step by step
+- Then follow the pipeline stages step by step
 
 The important code you may want to read first.
 
@@ -51,4 +51,4 @@ Other improvements from the original Assignment 4 framework includeschanging all
 
 ## 6. Credits
 
-The links for the downloaded models are in the [Model Attributions.txt](/Model%20Attributions.txt) files.
+The links for the downloaded models are in the [Model Attributions.txt](/Model_Attributions.txt) files.
