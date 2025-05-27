@@ -45,6 +45,14 @@ Due to the structural limitation of the code framework of Assignment 4 of the Co
 - Rendering Method: Purely Monte Carlo Path Tracing
 - BSDF: the lightweight BSDF
 
+![/images/disney_bsdf_1344x768.jpg](/images/disney_bsdf_1344x768.jpg)
+
+- Resolution: 1344 × 768
+- Samples Per Pixel: 256
+- Rendering Time (on M1 Max): ~30min
+- Rendering Method: Monte Carlo Path Tracing
+- BSDF: Disney BSDF
+
 *The purpose of rendering this image is to use it as a ground truth to show how well can MCPT + NEE be closer the pure MCPT result using a limit number of samples per pixel.*
 
 ---

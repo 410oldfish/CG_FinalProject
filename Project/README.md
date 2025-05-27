@@ -1,4 +1,4 @@
-This Disney BSDF Code Frame is modified in https://github.com/BachiLi/lajolla_public
+This Disney BSDF Code Frame is modified in https://github.com/BachiLi/lajolla_public (https://cseweb.ucsd.edu/~tzli/cse272/wi2024/homework1.pdf)
 we rewrite 
 1 the path tracing : path_tracing.h 
 2 BSDF materials : all disney_bsdf materials in src/materials
