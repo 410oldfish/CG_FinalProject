@@ -20,7 +20,7 @@ Due to the structural limitation of the code framework of Assignment 4 of the Co
 
 *The code framework for the Path Tracing pipeline equipped with our customised light weight BSDF was borrowed from Assignment 4 [🔗](https://wattlecourses.anu.edu.au/mod/folder/view.php?id=3416289) of the Computer Graphics course of the Australian National University.*
 
-*The code framework for the Path Tracing pipeline equipped with Disney BSDF was borrowed from Assignment 0 [🔗](https://cseweb.ucsd.edu/~tzli/cse272/wi2024/homework0.pdf) and Assignment 1 [🔗](https://cseweb.ucsd.edu/~tzli/cse272/wi2024/homework1.pdf) of the Advanced Image Synthesis course of the University of California San Diego. When we obtained the code, there is NO implementation regarding any of the Assignment tasks.*
+*The code framework for the Path Tracing pipeline equipped with Disney BSDF was borrowed from Assignment 1 [🔗](https://cseweb.ucsd.edu/~tzli/cse272/wi2024/homework1.pdf) of the Advanced Image Synthesis course of the University of California San Diego. When we obtained the code, there is NO implementation regarding any of the Assignment tasks.*
 
 
 ## Image Showcase
