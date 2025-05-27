@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<scene version="0.5.0">
+	<integrator type="path">
+		<integer name="maxDepth" value="-1"/>
+	</integrator>
+
+	<bsdf type="disneybsdf" id="White">
+		<rgb name="baseColor" value="1 1 1"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<float name="roughness" value="0.8"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<texture type="bitmap" id="RightWall_WallPaper">
+	<string name="filename" value="models/Wall/textures/WallPaper_1.jpg"/>
+</texture>
+
+	<bsdf type="disneybsdf" id="RightWall_Mat">
+		<ref name="baseColor" id="RightWall_WallPaper"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<float name="roughness" value="0.8"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<texture type="bitmap" id="BackWall_WallPaper">
+		<string name="filename" value="models/Wall/textures/WallPaper_2.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="BackWall_Mat">
+		<ref name="baseColor" id="BackWall_WallPaper"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<float name="roughness" value="0.8"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<texture type="bitmap" id="Desk_wood">
+		<string name="filename" value="models/Desk/textures/Desk_wood.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="Desk_Mat">
+		<ref name="baseColor" id="Desk_wood"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.1"/>
+		<float name="subsurface" value="0.1"/>
+		<float name="specular" value="0.3"/>
+		<float name="roughness" value="0.5"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="meshes/cbox_ceiling.obj"/>
+		<scale x="1.5" y="1" z="1.5"/>
+		<ref name="bsdf" id="White"/>
+	</shape>
+
+	<shape type="obj">
+		<string name="filename" value="meshes/cbox_floor.obj"/>
+		<transform name="toWorld">
+			<scale x="1.5" y="1" z="1.5"/>
+		</transform>
+		<ref name="bsdf" id="Desk_Mat"/>
+	</shape>
+
+	<shape type="obj">
+		<string name="filename" value="meshes/cbox_back.obj"/>
+		<transform name="toWorld">
+			<scale x="1.5" y="1.5" z="1"/>
+		</transform>
+		<ref name="bsdf" id="BackWall_Mat"/>
+	</shape>
+
+	<bsdf type="disneyglass" id="bsdf_glass">
+		<rgb name="baseColor" value="0.82 0.82 0.82"/>
+		<float name="roughness" value="0.0"/>
+		<float name="anisotropic" value="0.8"/>
+		<float name="eta" value="1.25"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="meshes/cbox_greenwall.obj"/>
+		<transform name="toWorld">
+			<scale x="1" y="1" z="1"/>
+		</transform>
+		<ref name="bsdf" id="bsdf_glass"/>
+	</shape>
+
+	<texture type="bitmap" id="Window_baseColor">
+		<string name="filename" value="models/Window/textures/window_baseColor.jpg"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="Window_Mat">
+		<ref name="baseColor" id="Window_baseColor"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<float name="roughness" value="0.8"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Window/window.obj"/>
+		<transform name="toWorld">
+			<scale x="2" y="2" z="1"/>
+			<rotate y="1" angle ="-90"/>
+			<translate x="50" y="-80" z="300"/>
+		</transform>
+		<ref name="bsdf" id="Window_Mat"/>
+	</shape>
+
+	<shape type="obj">
+		<string name="filename" value="models/Window/wall_m.obj"/>
+		<transform name="toWorld">
+			<scale x="2" y="2" z="1"/>
+			<rotate y="1" angle ="-90"/>
+			<translate x="50" y="-80" z="300"/>
+		</transform>
+		<ref name="bsdf" id="RightWall_Mat"/>
+	</shape>
+
+	<bsdf type="disneyglass" id="glass">
+		<rgb name="baseColor" value="0.82 0.67 0.16"/>
+		<float name="roughness" value="0.1"/>
+		<float name="anisotropic" value="0.8"/>
+		<float name="eta" value="1.5"/>
+	</bsdf>
+
+	<texture type="bitmap" id="MAC_BaseColor">
+		<string name="filename" value="models/Mac/textures/1_Base_color_white.jpg"/>
+	</texture>
+
+	<texture type="bitmap" id="MAC_Metallic">
+		<string name="filename" value="models/Mac/textures/1_Metallic.png"/>
+	</texture>
+
+	<texture type="bitmap" id="MAC_AO">
+		<string name="filename" value="models/Mac/textures/1_Mixed_AO.png"/>
+	</texture>
+
+	<texture type="bitmap" id="MAC_Roughness">
+		<string name="filename" value="models/Mac/textures/1_Roughness.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="MAC_Mat">
+		<!--		<rgb name="baseColor" value="0.1 0.1 0.1"/>-->
+		<ref name="baseColor" id="MAC_BaseColor"/>
+		<float name="specularTransmission" value="0.0"/>
+		<ref name="metallic" id = "MAC_Metallic"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<ref name="roughness" id="MAC_Roughness"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Mac/iMac.obj"/>
+
+		<transform name="toWorld">
+			<scale x="4" y="4" z="4"/>
+			<rotate y="1" angle ="180"/>
+			<translate x="330" y="-7" z="380"/>
+		</transform>
+
+		<ref name="bsdf" id="MAC_Mat"/>
+	</shape>
+
+	<texture type="bitmap" id="Canno_BaseColor">
+		<string name="filename" value="models/Canno/textures/QF1_Base_Color.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_Diffuse">
+		<string name="filename" value="models/Canno/textures/QF1_Diffuse.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_Metallic">
+		<string name="filename" value="models/Canno/textures/QF1_Metallic.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_Normal">
+		<string name="filename" value="models/Canno/textures/QF1_Normal.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_AO">
+		<string name="filename" value="models/Canno/textures/QF1_AO.png"/>
+	</texture>
+
+	<texture type="bitmap" id="Canno_Roughness">
+		<string name="filename" value="models/Canno/textures/QF1_Roughness.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="Canno_Mat">
+		<ref name="baseColor" id="Canno_BaseColor"/>
+		<float name="specularTransmission" value="0.0"/>
+		<ref name="metallic" id = "Canno_Metallic"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<ref name="roughness" id="Canno_Roughness"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Canno/Canno.obj"/>
+
+		<transform name="toWorld">
+			<scale x="30" y="30" z="30"/>
+			<rotate y="1" angle ="230"/>
+			<translate x="650" y="22" z="400"/>
+		</transform>
+
+		<ref name="bsdf" id="Canno_Mat"/>
+	</shape>
+
+	<bsdf type="disneybsdf" id="Bunny_Mat">
+		<rgb name="baseColor" value="0.2, 0.7, 0.5"/>
+		<float name="specularTransmission" value="0.4"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.8"/>
+		<float name="specular" value="0.5"/>
+		<float name="roughness" value="0.1"/>
+		<float name="specularTint" value="0.4"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1.45"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Bunny/Bunny.obj"/>
+
+		<transform name="toWorld">
+			<scale x="400" y="400" z="400"/>
+			<rotate y = "1" angle="180"/>
+			<translate x="440" y="-20" z="300"/>
+		</transform>
+
+		<ref name="bsdf" id="Bunny_Mat"/>
+	</shape>
+
+	<texture type="bitmap" id="WoodSculpture_BaseColor">
+		<string name="filename" value="models/WoodSculpture/textures/itfigurine_itfbody_Mat_BaseColor.png"/>
+	</texture>
+
+	<texture type="bitmap" id="WoodSculpture_AO">
+		<string name="filename" value="models/WoodSculpture/textures/itfigurine_itfbody_Mat_AO.png"/>
+	</texture>
+
+	<texture type="bitmap" id="WoodSculpture_Metallic">
+		<string name="filename" value="models/WoodSculpture/textures/itfigurine_itfbody_Mat_Metallic.png"/>
+	</texture>
+
+	<texture type="bitmap" id="WoodSculpture_Normal">
+		<string name="filename" value="models/WoodSculpture/textures/itfigurine_itfbody_Mat_Normal.png"/>
+	</texture>
+
+	<texture type="bitmap" id="WoodSculpture_Roughness">
+		<string name="filename" value="models/WoodSculpture/textures/itfigurine_itfbody_Mat_Roughness.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="WoodSculpture_Mat">
+		<ref name="baseColor" id="WoodSculpture_BaseColor"/>
+		<float name="specularTransmission" value="0.0"/>
+		<ref name="metallic" id = "WoodSculpture_Metallic"/>
+		<float name="subsurface" value="0.1"/>
+		<float name="specular" value="0.3"/>
+		<ref name="roughness" id="WoodSculpture_Roughness"/>
+		<float name="specularTint" value="0.3"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.3"/>
+		<float name="clearcoatGloss" value="0.1"/>
+		<float name="eta" value="1.5"/>
+
+		<ref name="normalmap" id="WoodSculpture_Normal"/>
+		<ref name="aomap" id="WoodSculpture_AO"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/WoodSculpture/WoodSculpture.obj"/>
+
+		<transform name="toWorld">
+			<scale x="1500" y="1500" z="1500"/>
+			<rotate y="1" angle="180"/>
+<!--			<rotate x="1" angle="90"/>-->
+			<translate x="150" y="0" z="400"/>
+		</transform>
+
+		<ref name="bsdf" id="WoodSculpture_Mat"/>
+	</shape>
+
+	<texture type="bitmap" id="Rose_Diffuse">
+		<string name="filename" value="models/Rose/textures/Rose_Diffuse.png"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="Rose_Mat">
+		<ref name="baseColor" id="Rose_Diffuse"/>
+		<float name="specularTransmission" value="0.3"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.5"/>
+		<float name="specular" value="0.5"/>
+		<float name="roughness" value="0.25"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.1"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1.38"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Rose/Rose.obj"/>
+
+		<transform name="toWorld">
+			<scale x="1" y="1" z="1"/>
+			<rotate x="1" angle="-100"/>
+			<rotate y="1" angle="90"/>
+			<translate x="357" y="55" z="250"/>
+		</transform>
+
+		<ref name="bsdf" id="Rose_Mat"/>
+	</shape>
+
+	<bsdf type="disneybsdf" id="Glass_Mat">
+		<rgb name="baseColor" value="0.8,0.8,0.8"/>
+		<float name="specularTransmission" value="1.0"/>
+		<float name="metallic" value = "0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.0"/>
+		<float name="roughness" value="0.1"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1.5"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/FlowerBottle/FlowerBottle.obj"/>
+
+		<transform name="toWorld">
+			<scale x="15" y="15" z="15"/>
+			<translate x="350" y="60" z="250"/>
+		</transform>
+
+		<ref name="bsdf" id="Glass_Mat"/>
+	</shape>
+
+	<bsdf type="disneybsdf" id="Water_Mat">
+		<rgb name="baseColor" value="0.7, 0.7, 0.7"/>
+		<float name="specularTransmission" value="0.9"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.0"/>
+		<float name="specular" value="0.9"/>
+		<float name="roughness" value="0.01"/>
+		<float name="specularTint" value="0.0"/>
+		<float name="anisotropic" value="0.0"/>
+		<float name="sheen" value="0.0"/>
+		<float name="sheenTint" value="0.0"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1.33"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/FlowerBottle/Water.obj"/>
+
+		<transform name="toWorld">
+			<scale x="1" y="1" z="1"/>
+			<translate x="350" y="57" z="250"/>
+		</transform>
+
+		<ref name="bsdf" id="Water_Mat"/>
+	</shape>
+
+	<texture type="bitmap" id="PillowBaseColor">
+		<string name="filename" value="models/Pillow/textures/Pillow_baseColor.jpg"/>
+	</texture>
+
+	<bsdf type="disneybsdf" id="Pillow_Mat">
+		<ref name="baseColor" id="PillowBaseColor"/>
+		<float name="specularTransmission" value="0.0"/>
+		<float name="metallic" value="0.0"/>
+		<float name="subsurface" value="0.2"/>
+		<float name="specular" value="0.3"/>
+		<float name="roughness" value="0.6"/>
+		<float name="specularTint" value="0.2"/>
+		<float name="anisotropic" value="0.3"/>
+		<float name="sheen" value="0.5"/>
+		<float name="sheenTint" value="0.4"/>
+		<float name="clearcoat" value="0.0"/>
+		<float name="clearcoatGloss" value="0.0"/>
+		<float name="eta" value="1"/>
+	</bsdf>
+
+	<shape type="obj">
+		<string name="filename" value="models/Pillow/Pillow.obj"/>
+
+		<transform name="toWorld">
+			<scale x="8" y="8" z="8"/>
+			<rotate y="1" angle="90"/>
+			<rotate z="1" angle="30"/>
+			<translate x="90" y="52" z="180"/>
+		</transform>
+
+		<ref name="bsdf" id="Pillow_Mat"/>
+	</shape>
+
+	<sensor type="perspective" id="Camera-camera">
+		<string name="fovAxis" value="smaller"/>
+		<float name="focusDistance" value="6.0"/>
+		<float name="fov" value="28.8415"/>
+		<transform name="toWorld">
+			<lookAt origin="700, 400, -400" target="300, 100, 500" up="0, 1, 0"/>
+		</transform>
+
+		<sampler type="independent">
+			<integer name="sampleCount" value="256"/>
+		</sampler>
+
+		<film type="hdrfilm" id="film">
+			<integer name="width" value="1344"/>
+			<integer name="height" value="768"/>
+			<string name="pixelFormat" value="rgb"/>
+			<boolean name="banner" value="false"/>
+			<string name="filename" value="images/final.exr"/>
+
+			<rfilter type="gaussian"/>
+		</film>
+	</sensor>
+
+	<emitter type="envmap" id="Area_002-light">
+		<string name="filename" value="../matpreview/pine_picnic_2k.exr"/>
+		<transform name="toWorld">
+			<rotate y="1" angle="-40"/>
+		</transform>
+		<float name="scale" value="1"/>
+	</emitter>
+</scene>

@@ -1,8 +1,7 @@
 #include "../microfacet.h"
 #include <vector>
 
-void weightComputation(
-    Real specular,
+void CalculateWeights(
     Real specular_transmission,
     Real metallic,
     Real clearcoat,
@@ -75,7 +74,7 @@ Spectrum eval_op::operator()(const DisneyBSDF &bsdf) const {
             f_Sheen = this->operator()(sheen_bsdf);
         }
         std::vector<Real> weights;
-        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
+        CalculateWeights(specular_transmission, metallic, cc, sh, weights);
 
         Spectrum result = weights[0] * f_Diffuse
                         + weights[1] * f_Clearcoat
@@ -117,7 +116,7 @@ Real pdf_sample_bsdf_op::operator()(const DisneyBSDF &bsdf) const {
         DisneySheen sheen = {bsdf.base_color, bsdf.sheen_tint};
 
         std::vector<Real> weights;
-        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
+        CalculateWeights(specular_transmission, metallic, cc, sh, weights);
         Real totalWeight = 0;
         for(auto w : weights){ totalWeight += w; }
         for(Real& w : weights){ w /= totalWeight; }
@@ -165,7 +164,7 @@ std::optional<BSDFSampleRecord>
         Real sh = eval(bsdf.sheen, vertex.uv, vertex.uv_screen_size, texture_pool);
 
         std::vector<Real> weights;
-        weightComputation(specular, specular_transmission, metallic, cc, sh, weights);
+        CalculateWeights(specular_transmission, metallic, cc, sh, weights);
         weights.pop_back();
         Real totalWeight = 0;
         for(auto w : weights){ totalWeight += w; }

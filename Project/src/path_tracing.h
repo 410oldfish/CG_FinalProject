@@ -87,8 +87,6 @@ Spectrum path_tracing(const Scene &scene, pcg32_state &rng, Ray& ray, RayDiffere
 
         if (G > 0 && pdf_direct_light > 0) {
 
-            assert(intersect_point.material_id >= 0);
-
             Spectrum brdf_direct_light_mat = eval(mat, dir_view, dir_light, intersect_point, scene.texture_pool);
 
             Spectrum light_emittion = emission(light, -dir_light, Real(0), point_on_light, scene);
