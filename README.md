@@ -10,7 +10,7 @@ Welcome to the artifact repository for the paper "Toward the Photorealistic Rend
 
 In this project, we have implemented Monte Carlo Path Tracing with a customised lightweight BSDF and Disney BSDF.
 
-Due to the structural limitation of the code framework of Assignment 4 of the Computer Graphics course of the Australian National University, the two BSDFs are implemented in two different frameworks. In both frameworks, all the core functions for Monte Carlo Path Tracing and BSDF are implemented on our own. Please refer to the README in a particular code framework for detail.
+Due to the structural limitation of the code framework of Assignment 4 of the Computer Graphics course of the Australian National University, the two BSDFs are implemented in two different frameworks. Even so, having a **single unified pipeline with easily suitable BSDFs** is part of our main future work. In both frameworks, all the core functions for Monte Carlo Path Tracing and BSDF are implemented on our own. Please refer to the README in a particular code framework for details.
 
 
 - Monte Carlo Path Tracing with a customised lightweight BSDF ([🔗](/CodeFramework/))
