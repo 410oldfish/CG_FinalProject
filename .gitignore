@@ -6,6 +6,7 @@ Project/.idea
 .DS_Store
 build
 .vscode
+.idea
 CMakeFiles
 CMakeCache.txt
 room.blend
