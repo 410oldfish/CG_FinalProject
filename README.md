@@ -51,6 +51,7 @@ Due to the structural limitation of the code framework of Assignment 4 of the Co
 
 - Resolution: 1344 × 768
 - Samples Per Pixel: 256
+- Average Max Depth: 10 (Russian Roulette = 0.9)
 - Rendering Time (on M1 Max): ~30min
 - Rendering Method: Monte Carlo Path Tracing
 - BSDF: Disney BSDF
