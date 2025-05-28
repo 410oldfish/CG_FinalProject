@@ -4,6 +4,7 @@ we rewrite
 2 BSDF materials : all disney_bsdf materials in src/materials
 3 Normal map : used in path tracing and sample,brdf,pdf 
 4 AO texture : used in path tracing indirect light contribution
+5 some tool function in micro-surface model
 
 # lajolla
 UCSD CSE 272 renderer
