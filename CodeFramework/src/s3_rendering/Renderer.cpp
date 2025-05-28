@@ -2,6 +2,8 @@
 // Created by goksu on 2/25/20.
 //
 
+#define PPM_OUTPUT 0
+
 #include <chrono>   // for system_clock
 #include <ctime>    // for std::time_t, std::localtime, std::tm
 #include <iomanip>  // for std::put_time
@@ -56,6 +58,9 @@ const float SMALL_EPSILON = 1e-6f;
 // @param scene: the scene to be rendered
 void Renderer::Render(const Scene& scene)
 {
+    auto start = std::chrono::system_clock::now();
+
+
     // Initialise a framebuffer
     std::vector<Vector3f> framebuffer(scene.width * scene.height);
 
@@ -100,18 +105,18 @@ void Renderer::Render(const Scene& scene)
             int m = i + j * scene.width;
 
 
-            if(scene.spp==1){
-                // i (x) is going from left to right
-                // j (y) is going from top to bottom
-                // We want x to go from right to left,
-                // y to go from bottom to top,
-                // and z to go from forward to backward
+            // TODO: task 4 multi-sampling
+            // use a right-hand coordinate system where +x is left, +y is up and +z is forward
+            // use scene.spp to determine the number of samples per pixel
 
-                // TODO: task 1.2 pixel projection
-                // use a right-hand coordinate system where +x is left, +y is up and +z is forward
+            Vector3f colour(0.f);
 
-                float offset_x = 0.5f;
-                float offset_y = 0.5f;
+            // Loop through each sample in the pixel
+            // Sample each pixel scene.spp times
+            for (int s = 0; s < scene.spp; ++s) {
+
+                float offset_x = get_random_float();
+                float offset_y = get_random_float();
 
                 // Normalised Device Coordinates (NDC) in the range [0, 1]
                 float ndc_x = (i + offset_x) / scene.width;
@@ -128,76 +133,40 @@ void Renderer::Render(const Scene& scene)
                 // The ray direction in the camera space, i.e., originating at (0,0,0) with a direction of (px, py, 1)
                 Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
 
+                Eigen::Vector3f dir_screen_eigen(dir_screen.x, dir_screen.y, dir_screen.z);
+
+                // Square
+
+                // Face
+                // x_rotate = 5.5988f; // Pitch
+                // y_rotate = 25.598f; // Yaw
+                // z_rotate = 0.f; // Roll
+
+
+                Eigen::Matrix3f yaw = Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f::UnitY()).toRotationMatrix();
+                // Local-space pitch (applied after yaw)
+                Eigen::Matrix3f pitch = Eigen::AngleAxisf(deg2rad(x_rotate), Eigen::Vector3f::UnitX()).toRotationMatrix();
+
+                Eigen::Matrix3f rotation = yaw * pitch;
+
+                dir_screen_eigen = rotation * dir_screen_eigen;
+
+                dir_screen.x = dir_screen_eigen(0);
+                dir_screen.y = dir_screen_eigen(1);
+                dir_screen.z = dir_screen_eigen(2);
+
+
+
                 // The ray direction in the world space, i.e., originating at (eye_pos) with a direction of (dir)
                 // The camera’s “look” axes are aligned with the world axes, no extra rotation is needed
                 Ray ray_world(eye_pos, dir_screen);
 
                 // Cast the ray into the scene and get the color at the intersection point
-                framebuffer[m] = scene.castRay(ray_world, 0, false);
-
-            }else {
-                // TODO: task 4 multi-sampling
-                // use a right-hand coordinate system where +x is left, +y is up and +z is forward
-                // use scene.spp to determine the number of samples per pixel
-
-                Vector3f colour(0.f);
-
-                // Loop through each sample in the pixel
-                // Sample each pixel scene.spp times
-                for (int s = 0; s < scene.spp; ++s) {
-
-                    float offset_x = get_random_float();
-                    float offset_y = get_random_float();
-
-                    // Normalised Device Coordinates (NDC) in the range [0, 1]
-                    float ndc_x = (i + offset_x) / scene.width;
-                    float ndc_y = (j + offset_y) / scene.height;
-
-                    // NDC in the range [-1, 1]
-                    ndc_x = 2.0f * ndc_x - 1.0f;
-                    ndc_y = 2.0f * ndc_y - 1.0f;
-
-                    // The camera-space coordinates of the pixel on the z=1 plane
-                    float px = - ndc_x * scale * imageAspectRatio;
-                    float py = - ndc_y * scale;
-
-                    // The ray direction in the camera space, i.e., originating at (0,0,0) with a direction of (px, py, 1)
-                    Vector3f dir_screen = Vector3f(px, py, 1.0f).normalized();
-
-                    Eigen::Vector3f dir_screen_eigen(dir_screen.x, dir_screen.y, dir_screen.z);
-
-                    // Square
-
-                    // Face
-                    // x_rotate = 5.5988f; // Pitch
-                    // y_rotate = 25.598f; // Yaw
-                    // z_rotate = 0.f; // Roll
-
-
-                    Eigen::Matrix3f yaw = Eigen::AngleAxisf(deg2rad(y_rotate), Eigen::Vector3f::UnitY()).toRotationMatrix();
-                    // Local-space pitch (applied after yaw)
-                    Eigen::Matrix3f pitch = Eigen::AngleAxisf(deg2rad(x_rotate), Eigen::Vector3f::UnitX()).toRotationMatrix();
-
-                    Eigen::Matrix3f rotation = yaw * pitch;
-
-                    dir_screen_eigen = rotation * dir_screen_eigen;
-
-                    dir_screen.x = dir_screen_eigen(0);
-                    dir_screen.y = dir_screen_eigen(1);
-                    dir_screen.z = dir_screen_eigen(2);
-
-
-
-                    // The ray direction in the world space, i.e., originating at (eye_pos) with a direction of (dir)
-                    // The camera’s “look” axes are aligned with the world axes, no extra rotation is needed
-                    Ray ray_world(eye_pos, dir_screen);
-
-                    // Cast the ray into the scene and get the color at the intersection point
-                    colour += scene.castRay(ray_world, 0, false);
-                }
-                // Average the colour
-                framebuffer[m] = colour / (float)scene.spp;
+                colour += scene.castRay(ray_world, 0, false);
             }
+            // Average the colour
+            framebuffer[m] = colour / (float)scene.spp;
+            
         }
         progress += 1.0f / (float)scene.height;
         UpdateProgress(progress);
@@ -213,6 +182,8 @@ void Renderer::Render(const Scene& scene)
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
     std::tm tm = *std::localtime(&t);
+
+    #if PPM_OUTPUT
 
     // Use absolute path to outputs/
     ss << "binary_task_"
@@ -238,4 +209,33 @@ void Renderer::Render(const Scene& scene)
         fwrite(color, 1, 3, fp);
     }
     fclose(fp);
+
+    #else
+
+
+    auto stop = std::chrono::system_clock::now();
+
+    // e.g. "framebuffer_20250528_183000.bin"
+    std::ostringstream oss;
+    oss << "fb_dump_" 
+        << std::put_time(&tm, "%Y%m%d_%H%M%S")
+        << "_ssp"
+        << scene.spp
+        << "_min"
+        << std::chrono::duration_cast<std::chrono::minutes>(stop - start).count()
+        << ".bin";
+    std::string dump_name = oss.str();
+
+    std::ofstream fout(dump_name, std::ios::binary);
+    if (!fout) {
+        std::cerr << "Error: could not open " << dump_name << " for writing\n";
+    } else {
+        // write raw floats: R, G, B for each pixel in row-major order
+        fout.write(reinterpret_cast<const char*>(framebuffer.data()),
+                   framebuffer.size() * sizeof(Vector3f));
+        fout.close();
+        std::cout << "Wrote raw float framebuffer to " << dump_name << "\n";
+    }
+
+    #endif
 }

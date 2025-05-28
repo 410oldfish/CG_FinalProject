@@ -4,7 +4,7 @@
 
 // 0: Use Monte Carlo Path Tracing Only
 // 1: Use Monte Carlo Path Tracing and Next Event Estimation (NEE)
-#define PURELY_MONTE_CARLO 0
+#define PURELY_MONTE_CARLO 1
 
 // 0: Sample a point on the light source uniformly by area
 // 1: Sample a light by its weight, and then sample a point on the light source uniformly by area
