@@ -1,13 +1,16 @@
 bob-the-duck: Lab 4
-cannon: ???
+cannon: https://www.turbosquid.com/3d-models/qf-1-pounder-pompom-cannon-3d-model-1400902
 cornellbox: Lab 4
 flute: https://sketchfab.com/3d-models/basic-flute-8eb90edf4b6a44e8a400bfd565b37483
-water glass: ???
+water glass: https://www.turbosquid.com/3d-models/3d-3d-decor-model-1772382
 lamp: https://sketchfab.com/3d-models/office-lamp-d934c6b791c34e0fafc30e9625b4c55c
-Mac: ???
+Mac: https://www.turbosquid.com/3d-models/3d-apple-imac-2079055
 plant: https://sketchfab.com/3d-models/indoor-plant-d984fcd54d014ef093d16cbd25d3c3bb
 rabbit: https://sketchfab.com/3d-models/glass-bunny-caeb681795a54c6eb0bf120582fe7f45
 Rin Nightgown: https://www.deviantart.com/mskittygemma/art/MMD-Rin-Nightgown-DL-in-desc-820510072
 Skybox: https://www.cgtrader.com/free-3d-models/exterior/cityscape/skybox-light-blue-sky
 table: https://sketchfab.com/3d-models/office-table-2e298de5176540f8bdf5633842604806
 window: https://free3d.com/3d-model/window-component-50401.html
+wallpaper: https://www.deviantart.com/photon56/art/MMD-Miside-room-stage-V1-1153217645
+pinkGuitar: https://sketchfab.com/3d-models/pink-heart-acoustic-guitar-1a4101f3e3bf4c2b8f2112674029cecc
+mirror: https://www.cgtrader.com/items/3105301/download-page
