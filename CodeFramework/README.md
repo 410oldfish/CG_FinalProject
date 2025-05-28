@@ -35,6 +35,8 @@ If you want to load an `.obj` object into the scene, please place the `.obj` and
 
 If you want to load an `.obj` light source, the same approach applies. Additionally, you need to push the light pointer to the list so that the program can easily identify which objects are lights. You also need to assign a weight for the light when it is sampled. This can be done by `scene.light_sources.push_back(lightUp.get());` and `scene.light_source_weights.push_back(1.0f);`.
 
+Alternatively, you can any objects in our scene using the `.blend` file. Please open the file when you are in the `models` folder so that all materials can be properly load. After adjusting the object positions, output it as a single or multiple OBJ, and then refer the OBJ filename in the `s2_modelling.hpp` to load the updated object.
+
 ## 5. How to Read the Code?
 
 - Start with [`/src/main.cpp`](/src/main.cpp)
