@@ -112,11 +112,11 @@ inline void s2_modelling(Scene& scene, std::vector<Material*>& loaded_materials,
     // =========================== OBJ OBJECTS ============================
     
 
-    // std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room.obj", Vector3f(0), white, loaded_materials, opened_images);
+    std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room.obj", Vector3f(0), white, loaded_materials, opened_images);
     // std::unique_ptr<MeshTriangle> room = std::make_unique<MeshTriangle>("../models/room_nobody_here.obj", Vector3f(0), white, loaded_materials, opened_images);
 
 
-    // scene.Add(std::move(room));
+    scene.Add(std::move(room));
 
     scene.Add(std::move(lightUp));
     // scene.Add(std::move(sunBig));
