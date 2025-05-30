@@ -127,9 +127,18 @@ if (argc < 2) {
     }
     std::fprintf(fp, "P6\n%d %d\n255\n", width, height);
     for (auto& v : acc) {
-        float r = std::pow(std::clamp(v.x, 0.f, 1.f), 0.6f);
-        float g = std::pow(std::clamp(v.y, 0.f, 1.f), 0.6f);
-        float b = std::pow(std::clamp(v.z, 0.f, 1.f), 0.6f);
+        // 有限 SPP 下，高光稀有导致估计偏低；
+        // Clamp 截断了极端高样本；
+        // Gamma 非线性 又让低 SPP 噪声看起来更暗、更“拉亮”中低值；
+
+        float r = std::clamp(v.x, 0.f, 1.f);
+        float g = std::clamp(v.y, 0.f, 1.f);
+        float b = std::clamp(v.z, 0.f, 1.f);
+
+        r = std::pow(r, 0.6f);
+        g = std::pow(g, 0.6f);
+        b = std::pow(b, 0.6f);
+
         unsigned char uc[3] = {
             static_cast<unsigned char>(255 * r),
             static_cast<unsigned char>(255 * g),

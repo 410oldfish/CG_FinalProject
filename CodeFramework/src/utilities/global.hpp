@@ -12,6 +12,7 @@
 
 #include <filesystem>
 #include <iostream>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
@@ -58,20 +59,70 @@ inline float get_random_float()
 }
 
 // UpdateProgress function to display a progress bar in the console
-inline void UpdateProgress(float progress)
-{
+// inline void UpdateProgress(float progress, std::string estimated_remaining_minutes="0")
+// {
+//     int barWidth = 70;
+
+//     std::cout << "[";
+//     int pos = barWidth * progress;
+//     for (int i = 0; i < barWidth; ++i) {
+//         if (i < pos) std::cout << "=";
+//         else if (i == pos) std::cout << ">";
+//         else std::cout << " ";
+//     }
+//     // std::cout << "] " << int(progress * 100.0) << " %\r";
+//     std::cout << "] " << int(progress * 100.0) << "," << estimated_remaining_minutes << "\r";
+//     std::cout.flush();
+// };
+
+
+#include <iostream>
+#include <string>
+
+// helper to clear current line
+static void clearLine() {
+    std::cout << "\033[2K";   // ANSI: clear entire line
+}
+
+inline void UpdateProgress(float progress, long seconds_past){
     int barWidth = 70;
 
+    // // move cursor up two lines so we overwrite last output
+    // std::cout << "\033[2A";
+    // move cursor up three lines so we overwrite last output
+    std::cout << "\033[3A";
+
+    // --- line 1: progress bar ---
+    clearLine();
     std::cout << "[";
-    int pos = barWidth * progress;
+    int pos = int(barWidth * progress);
     for (int i = 0; i < barWidth; ++i) {
-        if (i < pos) std::cout << "=";
+        if (i < pos)      std::cout << "=";
         else if (i == pos) std::cout << ">";
-        else std::cout << " ";
+        else               std::cout << " ";
     }
-    std::cout << "] " << int(progress * 100.0) << " %\r";
+    std::cout << "] " << int(progress * 100.0) << " %\n";
+
+    // ============== line 2: time elapsed and estimated remaining time =============
+
+    float minutes_past = seconds_past / 60.0f;
+    float estimated_remaining_minutes = 0.0f;
+    if (progress > 0.0f) {
+        // Calculate estimated remaining time based on progress
+        estimated_remaining_minutes = (minutes_past / progress) - minutes_past;
+        estimated_remaining_minutes = std::max(0.0f, estimated_remaining_minutes); // Ensure it's not negative
+    }
+
+    // --- line 2: estimated minutes ---
+    clearLine();
+    // static cast to int
+    std::cout << "Minutes Past: " << int(minutes_past) << "\n";
+    clearLine();
+    std::cout << "Remaining Minutes: " << int(estimated_remaining_minutes) << "\n";
+
     std::cout.flush();
-};
+}
+
 
 
 inline Eigen::Matrix<Vector3f, Eigen::Dynamic, Eigen::Dynamic>* loadImageAsMatrix(

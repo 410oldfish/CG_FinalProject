@@ -58,8 +58,6 @@ const float SMALL_EPSILON = 1e-6f;
 // @param scene: the scene to be rendered
 void Renderer::Render(const Scene& scene)
 {
-    auto start = std::chrono::system_clock::now();
-
 
     // Initialise a framebuffer
     std::vector<Vector3f> framebuffer(scene.width * scene.height);
@@ -95,7 +93,9 @@ void Renderer::Render(const Scene& scene)
     // Record the progress of the rendering
     float progress = 0.0f;
 
-    #pragma omp parallel for num_threads(8) // use multi-threading for speedup if openmp is available
+    auto start = std::chrono::system_clock::now();
+
+    #pragma omp parallel for num_threads(10) // use multi-threading for speedup if openmp is available
     // Each thread will process one row of the images
     for (uint32_t j = 0; j < scene.height; ++j) {
         for (uint32_t i = 0; i < scene.width; ++i) {
@@ -169,9 +169,15 @@ void Renderer::Render(const Scene& scene)
             
         }
         progress += 1.0f / (float)scene.height;
-        UpdateProgress(progress);
+
+        auto current = std::chrono::system_clock::now();
+        long seconds_past = std::chrono::duration_cast<std::chrono::seconds>(current - start).count();
+        UpdateProgress(progress, seconds_past);
     }
-    UpdateProgress(1.f);
+
+        auto current = std::chrono::system_clock::now();
+        long seconds_past = std::chrono::duration_cast<std::chrono::seconds>(current - start).count();
+        UpdateProgress(1.f, seconds_past);
 
     // ========================== Save the image ========================== //
 
