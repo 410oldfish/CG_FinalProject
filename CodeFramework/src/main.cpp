@@ -6,7 +6,7 @@
 #include "s4_postprocessing.hpp"
 #include "Material.hpp"
 
-#define FROM_BIN_TO_PPM    0
+#define FROM_BIN_TO_PPM    1
 
 int main(int argc, char** argv)
 {
@@ -93,8 +93,13 @@ if (argc < 2) {
         return 1;
     }
 
-    // Accumulate
+
+    
+// Accumulate
     std::vector<Vector3f> acc(num_pixels, Vector3f(0.f));
+
+    // ── FIX: Read each bin into a temporary buffer, then add to acc ──
+    std::vector<Vector3f> temp(num_pixels);
     for (auto& p : bins) {
         auto sz = std::filesystem::file_size(p);
         if (sz != expected_bytes) {
@@ -103,14 +108,31 @@ if (argc < 2) {
             return 1;
         }
         std::ifstream fin(p, std::ios::binary);
-        fin.read(reinterpret_cast<char*>(acc.data()), expected_bytes);
+        if (!fin) {
+            std::cerr << "Error opening " << p << "\n";
+            return 1;
+        }
+
+        // Read into 'temp' buffer, not directly into 'acc'
+        fin.read(reinterpret_cast<char*>(temp.data()), expected_bytes);
         if (!fin) {
             std::cerr << "Error reading " << p << "\n";
             return 1;
         }
+
+        // Accumulate pixel‐wise:
+        for (size_t i = 0; i < num_pixels; ++i) {
+            acc[i] += temp[i];
+        }
     }
-    // Average
-    for (auto& v : acc) v = v / static_cast<float>(count);
+
+    // Average:
+    for (auto& v : acc) {
+        v = v / static_cast<float>(count);
+    }
+
+
+
 
     // Write out PPM
     auto now = std::chrono::system_clock::now();
