@@ -57,3 +57,16 @@ Due to the structural limitation of the code framework of Assignment 4 of the Co
 - BSDF: Disney BSDF
 
 ---
+
+## ⚖️ License & Intellectual Property
+
+This project is shared for **academic and professional evaluation purposes**.
+
+### Original Team Contributions
+The core logic of the Ray Tracer, including the implementation of the **Disney Principled BRDF**, path-tracing optimization, and the accompanying **Design Report**, is the original work of the authors and is licensed under **CC BY-NC-ND 4.0**.
+
+### Academic Integrity & Third-Party Notice
+* **Course Material:** This repository contains boilerplate code and task specifications provided by The University California San Diego and The Australian National University. These components are used under the university's academic guidelines and are not subject to the CC license.
+* **Disney BRDF:** Our implementation follows the "Physically-Based Shading at Disney" publication. Credit is given to Walt Disney Animation Studios for their research.
+
+**Strictly Prohibited:** Redistribution, commercial use, or modification of the original team code without explicit consent is prohibited.
