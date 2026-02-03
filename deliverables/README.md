@@ -33,5 +33,7 @@
 - The pipeline is evaluated in two indoor study-room scene rendering settings, with objects featuring materials such as plastic, wood, cement, mirror, glass, and skin.
 - Results show that although the pipeline can generate an overall photorealistic image from an input 3D scene model, challenges remain, such as fine-tuning material parameters and addressing violations of energy conservation in some edge cases.
 - In addition to refining the current rendering logic, one major future work is to support GPU rendering to significantly improve computational efficiency.
-About Collaboration:
+
+**About Collaboration**:
+
 - Haoting Chen contributed about 33% to the project. Haoting Chen’s main roles include writing the majority of the paper's sections and implementing the code for the customised Monte Carlo ray tracing pipeline. Yuan Hong extended the code to support Disney BSDF rendering. Hongyu Yu implemented an input interface for OBJ files to generate C++ triangular instances.
