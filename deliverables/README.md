@@ -36,4 +36,4 @@
 
 **About Collaboration**:
 
-- Haoting Chen contributed about 33% to the project. Haoting Chen’s main roles include writing the majority of the paper's sections and implementing the code for the customised Monte Carlo ray tracing pipeline. Yuan Hong extended the code to support Disney BSDF rendering. Hongyu Yu implemented an input interface for OBJ files to generate C++ triangular instances.
+- Haoting Chen contributed about **33%** to the project. Haoting Chen’s main roles include writing the majority of the paper's sections and implementing the code for the customised Monte Carlo ray tracing pipeline. Yuan Hong extended the code to support Disney BSDF rendering. Hongyu Yu implemented an input interface for OBJ files to generate C++ triangular instances.
