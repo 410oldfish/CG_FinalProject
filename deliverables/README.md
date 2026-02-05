@@ -1,5 +1,7 @@
-## Abstract
+ > [!IMPORTANT] 
+ > If any links or files require a password, please use my **UTAS Application Number**. 
 
+## Abstract
 
 **Title**: Toward the Photorealistic Rendering of Study Room Scenes through Monte Carlo Path Tracing with a Customised Lightweight BSDF and Disney BSDF
 
@@ -15,12 +17,14 @@
 
 **Course Outline**: 
 
-- Students in this course were required to either conduct computer graphics research projects or participate in a photorealistic rendering competition in a group. For the competition, the group were required to creatively design a 3D scene, autonomously choose a combination of 3D rendering techniques, and implement them from scratch.
+- Students in this course were required to either conduct computer graphics research projects or participate in a photorealistic rendering *competition* in a group. For the competition, the group were required to creatively design a 3D scene, autonomously choose a combination of 3D rendering techniques, and implement them from scratch. ([reference](
+https://1drv.ms/f/c/4f49bb445ba8ff14/IgC-wOsVFEZoSpTf3QKQgPQlATR43PxNM1Op5wL73sWP8w8?e=gFK3oo))
 
 
 **Course Final Mark**: 81 / 100
 
-**Project Weight**: [30%](https://1drv.ms/f/c/4f49bb445ba8ff14/IgAYYjrNIBt0SpZ_SL9pQ9pOATAFfnwSbclO-syJrqqytos) of COMP8610
+**Project Weight**: [30%](
+https://1drv.ms/f/c/4f49bb445ba8ff14/IgC-wOsVFEZoSpTf3QKQgPQlATR43PxNM1Op5wL73sWP8w8?e=gFK3oo) of COMP8610
 
 **Project Mark**: N/A
 
